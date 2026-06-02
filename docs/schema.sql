@@ -1,4 +1,9 @@
--- MenuEngine — Supabase Postgres schema
+-- MenuEngine — Postgres schema (REFERENCE ONLY)
+-- ---------------------------------------------------------------------------
+-- NOTE: The live datastore is a Google Sheet ("MenuEngine DB") exposed via a
+-- Google Apps Script web app (see backend/gsheet/). This SQL file is kept as a
+-- reference and a future migration target — the Sheet tabs mirror these tables
+-- (Households, Members, TastePicks, Recipes, Menus, MenuItems).
 -- ---------------------------------------------------------------------------
 -- Access model: NO LOGIN. Everything is reached through unguessable share
 -- slugs. The browser never talks to Postgres directly — all reads/writes go

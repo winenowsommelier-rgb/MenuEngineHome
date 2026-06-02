@@ -20,17 +20,22 @@ family loves** — it builds menus and full recipes you can share with a link.
 ## Stack
 
 - **Front-end:** static HTML/CSS/JS (no build step) on **Vercel**
-- **Back-end:** Vercel serverless functions (`/api`)
-- **AI:** Anthropic API — **Claude Opus** + web search (server-side only)
-- **Database:** **Supabase Postgres** (see [`docs/schema.sql`](docs/schema.sql))
+- **Database:** a **Google Sheet** exposed as a free JSON API via a Google
+  Apps Script web app (see [`backend/gsheet/SETUP.md`](backend/gsheet/SETUP.md))
+- **Generation:** the **Claude process** (Claude Opus + web search) builds the
+  menus directly — no paid API key wired in, so running cost is **$0**
 
 ## Repo layout
 
 ```
-index.html            Step 1 — taste-setup card picker
-profile.html          Step 2 — household & member profiles
-docs/PLAN.md          Full build plan & data contracts
-docs/schema.sql       Supabase Postgres schema
+index.html               Step 1 — taste-setup card picker
+profile.html             Step 2 — household & member profiles
+api.js                   Client wrapper for the Google Sheets API
+config.example.js        Copy to config.js with your web-app URL + token
+backend/gsheet/Code.gs   Apps Script web app (the database API)
+backend/gsheet/SETUP.md  4-step deploy for the Google Sheets backend
+docs/PLAN.md             Full build plan & data contracts
+docs/schema.sql          Reference SQL schema (Sheet tabs mirror it)
 docs/taste-profile.json  First captured family taste profile (50 dishes)
 ```
 
@@ -42,12 +47,13 @@ needed for the setup pages.
 
 ## Privacy / access model
 
-The browser never talks to the database directly. All data flows through
-serverless functions that hold the secrets; tables use row-level security
-with no public policies, and menus are reached only via unguessable share
-slugs. See [`docs/PLAN.md`](docs/PLAN.md) for the architecture.
+No accounts. Households and menus are reached only via **unguessable share
+slugs**, so a link is the key. Writes to the sheet require a shared token kept
+in your local `config.js` (gitignored). See [`docs/PLAN.md`](docs/PLAN.md).
 
 ## Status
 
-Steps 1–3 done (setup pages + schema). Next: Supabase project wiring and
-the menu-generation endpoint. See [`docs/PLAN.md`](docs/PLAN.md).
+Steps 1–4 done: setup pages, reference schema, and the Google Sheets backend
+(spreadsheet created + Apps Script API + client glue). Remaining: deploy the
+Apps Script once (`backend/gsheet/SETUP.md`), then Step 5 — menu generation —
+and Step 6 — the shareable menu view. See [`docs/PLAN.md`](docs/PLAN.md).

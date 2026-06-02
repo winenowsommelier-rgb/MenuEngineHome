@@ -10,25 +10,34 @@ no login required.
 |------|----------|
 | Engine | **Hybrid** — a curated recipe library + **Claude Opus** generation with **online search** for new/seasonal ideas |
 | Sharing | **Shareable links, no login.** Access via unguessable slugs |
-| Hosting | **Vercel** — static front-end + serverless functions |
-| Database | **Supabase Postgres** |
-| AI access | Uses the Anthropic API key server-side. Opus is sufficient; online search enabled for fresh ideas |
+| Hosting | **Vercel** — static front-end (no build step) |
+| Database | **Google Sheet** ("MenuEngine DB") exposed as a free JSON API via a Google Apps Script web app — $0, no project limits |
+| Generation | **The Claude process** (this session) generates menus with **web search**. No paid Anthropic API key is wired in — keeps running cost at $0 |
+
+> Earlier plan used Supabase Postgres + a server-side Anthropic API key. We
+> switched to Google Sheets to stay free (Supabase free tier caps active
+> projects) and to let the Claude process do generation directly. The original
+> SQL schema is kept in `docs/schema.sql` as a reference / future migration
+> target — the Sheet tabs mirror it.
 
 ## Architecture
 
 ```
 Browser (static HTML/JS on Vercel)
-   │  taste picks + household profile (JSON)
+   │  reads: getHousehold/getMenu by share slug
+   │  writes: saveHousehold/savePicks/saveMenu (+ write token)
    ▼
-Vercel serverless functions  ──►  Anthropic API (Claude Opus + web search)
-   │  (service-role key)
-   ▼
-Supabase Postgres  ──►  households, members, recipes, taste_picks, menus, menu_items
+Google Apps Script web app  ──►  Google Sheet "MenuEngine DB"
+   (free JSON API)                tabs: Households, Members, TastePicks,
+                                  Recipes, Menus, MenuItems
+
+Menu generation: the Claude process (this session) reads the taste profile +
+household, uses web search for fresh/seasonal ideas, and writes the resulting
+menu back via saveMenu.
 ```
 
-The browser never touches Postgres directly. Serverless functions hold the
-service-role key and the Anthropic key. RLS is on with no anon policies, so
-the only path to data is through our functions (see `docs/schema.sql`).
+Reads are gated by unguessable share slugs; writes by a shared token. See
+`backend/gsheet/SETUP.md` for the deploy and `backend/gsheet/Code.gs` for the API.
 
 ## Build steps
 
@@ -40,18 +49,21 @@ the only path to data is through our functions (see `docs/schema.sql`).
 - [x] **Step 2 — Household & members** (`profile.html`)
   Household name + per-member age group, spice tolerance, portion, diet,
   allergies, dislikes. Persists locally, "Copy my household" exports JSON.
-- [x] **Step 3 — Schema** (`docs/schema.sql`)
-  Households, members, recipes, taste_picks, menus, menu_items, generations.
-- [ ] **Step 4 — Supabase project + serverless wiring**
-  Create project, apply schema, add `/api/*` functions (create household,
-  save picks, generate menu).
+- [x] **Step 3 — Schema** (`docs/schema.sql` + Google Sheet tabs)
+  Households, members, recipes, taste_picks, menus, menu_items. The live store
+  is the Google Sheet; the SQL file is kept as a reference.
+- [x] **Step 4 — Google Sheets backend**
+  Spreadsheet "MenuEngine DB" created in Drive. Apps Script web app
+  (`backend/gsheet/Code.gs`) exposes read/write JSON endpoints. Client glue in
+  `api.js` + `config.example.js`. Deploy steps in `backend/gsheet/SETUP.md`.
+  *(Pending the one-time manual deploy of the Apps Script + filling `config.js`.)*
 - [ ] **Step 5 — Menu generation**
-  Serverless endpoint: feed taste profile + household into Claude Opus (with
-  web search), match against the curated library, fill gaps by generation,
-  return a structured weekly/monthly menu + recipes. Persist to `menus`.
+  The Claude process reads the taste profile + household, uses web search for
+  fresh ideas, matches the curated library, fills gaps by generation, and
+  produces a structured weekly/monthly menu. Saved via `saveMenu`.
 - [ ] **Step 6 — Shareable menu view**
-  `menu.html?slug=…` renders the menu + recipes from a share slug; printable
-  shopping list.
+  `menu.html?slug=…` fetches the menu via `getMenu` and renders it + recipes;
+  printable shopping list.
 
 ## Data contracts
 

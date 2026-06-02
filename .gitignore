@@ -1,0 +1,7 @@
+# Local front-end config holds the write token — never commit it.
+config.js
+
+# OS / editor cruft
+.DS_Store
+*.swp
+node_modules/
