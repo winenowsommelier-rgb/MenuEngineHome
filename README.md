@@ -53,7 +53,10 @@ in your local `config.js` (gitignored). See [`docs/PLAN.md`](docs/PLAN.md).
 
 ## Status
 
-Steps 1–4 done: setup pages, reference schema, and the Google Sheets backend
-(spreadsheet created + Apps Script API + client glue). Remaining: deploy the
-Apps Script once (`backend/gsheet/SETUP.md`), then Step 5 — menu generation —
-and Step 6 — the shareable menu view. See [`docs/PLAN.md`](docs/PLAN.md).
+**Steps 1–6 done** — end to end working:
+1. Taste setup (`index.html`) · 2. Household (`profile.html`) · 3. Schema ·
+4. Google Sheets backend (deployed + verified) · 5. First weekly menu generated
+and saved · 6. Shareable menu viewer (`menu.html?slug=…`).
+
+The first menu is live in the sheet (slug `z6a3jtpu`). Next up: deploy to
+Vercel and add per-recipe pages + shopping lists. See [`docs/PLAN.md`](docs/PLAN.md).

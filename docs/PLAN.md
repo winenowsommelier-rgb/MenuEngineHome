@@ -58,13 +58,25 @@ Reads are gated by unguessable share slugs; writes by a shared token. See
   confirmed. Client glue in `api.js` + `config.example.js`; live URL + token in
   local `config.js` (gitignored). Seeded household "My Family" with all 50
   taste picks. Deploy steps in `backend/gsheet/SETUP.md`.
-- [ ] **Step 5 — Menu generation**
-  The Claude process reads the taste profile + household, uses web search for
-  fresh ideas, matches the curated library, fills gaps by generation, and
-  produces a structured weekly/monthly menu. Saved via `saveMenu`.
-- [ ] **Step 6 — Shareable menu view**
-  `menu.html?slug=…` fetches the menu via `getMenu` and renders it + recipes;
-  printable shopping list.
+- [x] **Step 5 — Menu generation** ✅ first menu live
+  The Claude process built a balanced 7-day dinner plan from the 50 picks
+  (family of 4, medium spice) and saved it via `saveMenu`. Menu slug `z6a3jtpu`,
+  17 items across Thai/Chinese/Japanese/American. Future runs can add web
+  search for fresh/seasonal ideas and a curated-library match step.
+- [x] **Step 6 — Shareable menu view** ✅
+  `menu.html?slug=…` fetches via `getMenu` and renders the week as day cards
+  (cuisine pills, role tags, notes), with a print button. Public config split:
+  `config.js` (committed, read-only apiUrl + slugs) vs `config.local.js`
+  (gitignored, write token).
+
+## Next ideas
+
+- [ ] Deploy to Vercel (static — just point it at the repo; no build step).
+- [ ] Wire `index.html` / `profile.html` "Save" buttons to the API directly
+  (currently copy-paste; needs the write token, so route via a tiny serverless
+  proxy or a prompt).
+- [ ] Per-recipe pages with ingredients + steps + a generated shopping list.
+- [ ] Seed the `Recipes` tab from the curated library and link `recipe_id`s.
 
 ## Data contracts
 

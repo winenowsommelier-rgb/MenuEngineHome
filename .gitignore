@@ -1,5 +1,5 @@
-# Local front-end config holds the write token — never commit it.
-config.js
+# Secret write token lives here — never commit it.
+config.local.js
 
 # OS / editor cruft
 .DS_Store
