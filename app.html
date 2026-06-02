@@ -180,17 +180,17 @@
 <script>
 /* ============================ Data (prototype) ============================ */
 const MEMBERS = [
-  {code:"GGM", name:"Great Grandma", av:"👵", factor:0.6, badges:["Soft food","Mild"]},
-  {code:"D",   name:"Dad",           av:"🧔", factor:1.0, badges:["No beef","Spicy OK 🌶️","Low sugar"]},
-  {code:"M",   name:"Mom",           av:"👩", factor:0.9, badges:["No beef","No raw fish","Comfort"]},
-  {code:"N1",  name:"Eldest Son",    av:"🧑", factor:1.5, badges:["No fish","High protein","More fiber"]},
-  {code:"N2",  name:"Second Son",    av:"👨", factor:1.4, badges:["High protein"]},
-  {code:"N3",  name:"Third Son",     av:"👨", factor:1.5, badges:["High protein"]},
-  {code:"N4",  name:"Fourth Son",    av:"👨", factor:1.5, badges:["High protein"]},
-  {code:"N5",  name:"Note",          av:"🩰", factor:1.0, badges:["High protein","Ballet"]},
-  {code:"N6",  name:"Neon",          av:"👧", factor:0.7, badges:["Kid","Mild"]},
-  {code:"N7",  name:"Neo",           av:"🧒", factor:0.4, badges:["Toddler","Soft"]},
-  {code:"L",   name:"Lookaew",       av:"👩‍🦰", factor:0.9, badges:[]},
+  {code:"GGM", name:"Great Grandma", av:"👵", factor:0.6, lunchWeekday:"home", badges:["Soft food","Mild"]},
+  {code:"D",   name:"Dad",           av:"🧔", factor:1.0, lunchWeekday:"home", badges:["No beef","Spicy OK 🌶️","Low sugar"]},
+  {code:"M",   name:"Mom",           av:"👩", factor:0.9, lunchWeekday:"home", badges:["No beef","No raw fish","Comfort"]},
+  {code:"N1",  name:"Eldest Son",    av:"🧑", factor:1.5, lunchWeekday:"away", badges:["No fish","High protein","More fiber"]},
+  {code:"N2",  name:"Second Son",    av:"👨", factor:1.4, lunchWeekday:"away", badges:["High protein"]},
+  {code:"N3",  name:"Third Son",     av:"👨", factor:1.5, lunchWeekday:"away", badges:["High protein"]},
+  {code:"N4",  name:"Fourth Son",    av:"👨", factor:1.5, lunchWeekday:"away", badges:["High protein"]},
+  {code:"N5",  name:"Note",          av:"🩰", factor:1.0, lunchWeekday:"away", badges:["High protein","Ballet"]},
+  {code:"N6",  name:"Neon",          av:"👧", factor:0.7, lunchWeekday:"away", badges:["Kid","Mild"]},
+  {code:"N7",  name:"Neo",           av:"🧒", factor:0.4, lunchWeekday:"home", badges:["Toddler","Soft"]},
+  {code:"L",   name:"Lookaew",       av:"👩‍🦰", factor:0.9, lunchWeekday:"away", badges:[]},
 ];
 
 const MEAL_WEIGHT = {breakfast:0.8, lunch:0.9, dinner:1.0};
@@ -237,7 +237,15 @@ let vetoes = {};        // { "date|meal": true }
 
 function vkey(date, meal){ return date + "|" + meal; }
 function roundHalfUp(x){ return Math.ceil(x*2)/2; }
-function householdFactor(){ return MEMBERS.reduce((s,m)=>s+m.factor,0); }
+function isWeekend(date){ const g=new Date(date+"T00:00:00").getDay(); return g===0||g===6; }
+// Who's home for this meal? Breakfast & dinner: everyone. Weekday lunch: only those marked home.
+function attendees(meal, date){
+  return MEMBERS.filter(m=>{
+    if(meal==="lunch" && !isWeekend(date)) return m.lunchWeekday!=="away";
+    return true;
+  });
+}
+function isAttendee(m, meal, date){ return attendees(meal,date).some(x=>x.code===m.code); }
 
 /* ============================ Login ============================ */
 function renderLogin(){
@@ -295,10 +303,12 @@ function renderDay(){
     if(!dishes.length) return;
     const vetoed = !!vetoes[vkey(day.date, meal)];
 
-    // cook quantity: household demand for this meal, minus me if I veto
-    let raw = householdFactor() * MEAL_WEIGHT[meal];
-    if(vetoed) raw -= me.factor * MEAL_WEIGHT[meal];
+    // cook quantity: demand from who's actually eating this meal, minus me if I veto
+    const present = attendees(meal, day.date);
+    let raw = present.reduce((s,m)=>s+m.factor,0) * MEAL_WEIGHT[meal];
+    if(vetoed && isAttendee(me, meal, day.date)) raw -= me.factor * MEAL_WEIGHT[meal];
     const cook = roundHalfUp(raw);
+    const partial = (meal==="lunch" && !isWeekend(day.date));
 
     const sec = document.createElement("div");
     sec.className = "meal" + (vetoed ? " veto" : "");
@@ -316,7 +326,7 @@ function renderDay(){
     sec.innerHTML = `
       <div class="meal-head">
         <span class="ico">${MEAL_ICON[meal]}</span>
-        <span class="lbl">${meal}</span>
+        <span class="lbl">${meal}${partial ? ` · ${present.length} home` : ""}</span>
         <span class="qty">Cook <b>~${cook}</b> servings</span>
       </div>
       <div class="card">

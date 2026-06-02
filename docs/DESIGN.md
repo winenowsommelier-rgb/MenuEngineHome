@@ -50,9 +50,12 @@ drafts                     meals (+reason)      dishes, locks       sent to cook
 
 | Meal | Character | Health hooks |
 |------|-----------|--------------|
-| **Breakfast** | Lighter, fast, some soft | Congee/eggs for GGM & Neo; protein (eggs) for trainers; low-sugar for Dad |
-| **Lunch** | Rice bowls, noodle soups, salads | Fiber + protein; portion-aware |
+| **Breakfast** | Cooked by the cook, lighter, some soft | Congee/eggs for GGM & Neo; protein (eggs) for trainers; low-sugar for Dad |
+| **Lunch** | Rice bowls, noodle soups, salads · **weekday = mixed attendance** | Fiber + protein; portioned only for who's home |
 | **Dinner** | The main event (current engine) | Beef‑free, fish‑free (shrimp OK), spice on the side, soft options |
+
+**Planning unit:** **calendar month**, drafted ahead and **published one week at
+a time** so members always review the upcoming 7 days.
 
 ---
 
@@ -84,8 +87,14 @@ For multi‑dish meals (e.g. a feast), `cook_servings` is split across dishes by
 weight so nothing is over‑cooked. Result the cook sees: **"Cook ~11.5 servings
 (≈ ½ portion spare)."**
 
-*Attendance* matters (school/work lunches), which is the main thing I need to
-confirm — see open questions.
+**Attendance (confirmed).** Breakfast and dinner: everyone is home → cook for
+all. **Weekday lunch is mixed** — only those home eat the cooked lunch, so
+lunch portions are much smaller; weekend lunch is full house. Each member has a
+`lunchWeekday: home|away` flag (assumed defaults: GGM, Dad, Mom, Neo home;
+the working/studying members away — to be confirmed per person). The engine
+sums only the **present** members' factors per meal.
+
+> Prototype assumptions to confirm: who is actually home for weekday lunch.
 
 ---
 
