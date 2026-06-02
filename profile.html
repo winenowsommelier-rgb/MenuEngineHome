@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MenuEngine · Household</title>
+<style>
+  :root{
+    --bg:#fff7f0; --card:#fff; --ink:#2b2b2b; --muted:#8a8175;
+    --accent:#ff7a1a; --accent-soft:#fff0e4; --line:#efe6da;
+    --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.45; padding-bottom:96px;
+  }
+  header{text-align:center; padding:24px 18px 6px}
+  header h1{margin:0; font-size:24px; letter-spacing:-.5px}
+  header p{margin:6px 0 0; color:var(--muted); font-size:14px}
+  main{max-width:640px; margin:0 auto; padding:14px}
+  .field{margin:14px 0}
+  label{display:block; font-size:13px; font-weight:600; margin-bottom:6px}
+  input[type=text], input[type=number]{
+    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+    font-size:15px; background:#fff;
+  }
+  .members{display:flex; flex-direction:column; gap:14px; margin-top:8px}
+  .member{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:14px; box-shadow:var(--shadow); position:relative;
+  }
+  .member .top{display:flex; gap:10px; align-items:center; margin-bottom:6px}
+  .member .top input{flex:1}
+  .member .avatar{
+    width:40px;height:40px;border-radius:50%;background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+  }
+  .remove{
+    background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;
+    padding:4px 8px;border-radius:8px;
+  }
+  .remove:hover{background:#fdeaea;color:#d33}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:999px; padding:6px 12px; font-size:13px; cursor:pointer; transition:.12s;
+  }
+  .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+  .sub{font-size:12px;color:var(--muted);margin:0 0 5px}
+  .addBtn{
+    width:100%; margin-top:14px; border:2px dashed var(--line); background:transparent;
+    color:var(--accent); border-radius:14px; padding:14px; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  .bar{
+    position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:12px 14px;
+    display:flex; gap:10px; justify-content:space-between; align-items:center;
+  }
+  .bar .inner{max-width:640px;margin:0 auto;width:100%;display:flex;gap:10px;justify-content:space-between;align-items:center}
+  .btn{border:none;border-radius:10px;padding:11px 16px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--muted)}
+  .btn.primary{background:var(--accent);color:#fff}
+  .navlink{display:block;text-align:center;margin:18px auto 0;color:var(--accent);font-size:14px;text-decoration:none}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:420px){.grid2{grid-template-columns:1fr}}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:30;display:none;align-items:center;justify-content:center;padding:18px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:520px;padding:18px;box-shadow:var(--shadow)}
+  .modal textarea{width:100%;height:220px;border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+  .modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:40}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+  <header>
+    <h1>👨‍👩‍👧‍👦 Your Household</h1>
+    <p>Who are we cooking for? This shapes portions, spice, and dietary fit.</p>
+  </header>
+
+  <main>
+    <div class="field">
+      <label for="hhName">Household name</label>
+      <input type="text" id="hhName" placeholder="e.g. The Tan Family" />
+    </div>
+
+    <div class="members" id="members"></div>
+    <button class="addBtn" id="addBtn">+ Add a family member</button>
+
+    <a class="navlink" href="index.html">← Back to taste setup</a>
+  </main>
+
+  <div class="bar">
+    <div class="inner">
+      <div style="font-size:14px"><b id="memCount" style="color:var(--accent)">0</b> members</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="clearBtn">Clear</button>
+        <button class="btn primary" id="copyBtn">Copy my household</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h3>Your household 📋</h3>
+      <p style="margin:0 0 8px;color:var(--muted);font-size:13px">Copied. Paste this back to MenuEngine alongside your taste picks.</p>
+      <textarea id="jsonOut" readonly></textarea>
+      <div class="row">
+        <button class="btn ghost" id="closeModal">Close</button>
+        <button class="btn primary" id="copyAgain">Copy again</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+const STORE_KEY = "menuengine.household.v1";
+
+const AGE_GROUPS = ["Toddler","Child","Teen","Adult","Senior"];
+const SPICE = ["🚫 None","🌶️ Mild","🌶️🌶️ Medium","🌶️🌶️🌶️ Hot"];
+const PORTION = ["Small","Regular","Large"];
+const DIET = ["Omnivore","Vegetarian","Vegan","Pescatarian","Halal","Kosher"];
+const COMMON_ALLERGENS = ["Peanut","Tree nut","Shellfish","Fish","Egg","Dairy","Gluten","Soy","Sesame"];
+
+const AVATARS = ["🧑","👩","👨","👧","👦","🧒","👶","👵","👴","🧓"];
+
+let state = load();
+
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(STORE_KEY));
+    if(d && Array.isArray(d.members)) return d;
+  }catch(e){}
+  return { householdName:"", members:[ blankMember() ] };
+}
+function blankMember(){
+  return {
+    name:"", ageGroup:"Adult", spice:1, portion:1,
+    diet:"Omnivore", allergies:[], dislikes:""
+  };
+}
+function save(){
+  state.householdName = document.getElementById("hhName").value;
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  document.getElementById("memCount").textContent = state.members.length;
+}
+
+const membersEl = document.getElementById("members");
+
+function render(){
+  document.getElementById("hhName").value = state.householdName || "";
+  membersEl.innerHTML = "";
+  state.members.forEach((m, i)=>membersEl.appendChild(memberCard(m, i)));
+  document.getElementById("memCount").textContent = state.members.length;
+}
+
+function chipRow(options, currentIdxOrSet, onPick, multi){
+  const wrap = document.createElement("div");
+  wrap.className = "chips";
+  options.forEach((opt, idx)=>{
+    const c = document.createElement("button");
+    c.className = "chip";
+    c.type = "button";
+    const on = multi ? currentIdxOrSet.includes(opt) : currentIdxOrSet === idx;
+    c.setAttribute("aria-pressed", String(on));
+    c.textContent = opt;
+    c.addEventListener("click", ()=>onPick(idx, opt, c));
+    wrap.appendChild(c);
+  });
+  return wrap;
+}
+
+function memberCard(m, i){
+  const el = document.createElement("div");
+  el.className = "member";
+
+  const top = document.createElement("div");
+  top.className = "top";
+  const av = document.createElement("div");
+  av.className = "avatar";
+  av.textContent = AVATARS[i % AVATARS.length];
+  const nameIn = document.createElement("input");
+  nameIn.type = "text"; nameIn.placeholder = "Name (e.g. Mom, Leo)";
+  nameIn.value = m.name;
+  nameIn.addEventListener("input", ()=>{ m.name = nameIn.value; save(); });
+  const rm = document.createElement("button");
+  rm.className = "remove"; rm.innerHTML = "✕"; rm.title = "Remove";
+  rm.addEventListener("click", ()=>{
+    state.members.splice(i,1);
+    if(!state.members.length) state.members.push(blankMember());
+    save(); render();
+  });
+  top.append(av, nameIn, rm);
+  el.appendChild(top);
+
+  el.appendChild(labelled("Age group",
+    chipRow(AGE_GROUPS, AGE_GROUPS.indexOf(m.ageGroup), (idx)=>{
+      m.ageGroup = AGE_GROUPS[idx]; save(); render();
+    })));
+
+  el.appendChild(labelled("Spice tolerance",
+    chipRow(SPICE, m.spice, (idx)=>{ m.spice = idx; save(); render(); })));
+
+  const g2 = document.createElement("div");
+  g2.className = "grid2";
+  g2.appendChild(labelled("Portion",
+    chipRow(PORTION, m.portion, (idx)=>{ m.portion = idx; save(); render(); })));
+  g2.appendChild(labelled("Diet",
+    chipRow(DIET, DIET.indexOf(m.diet), (idx)=>{ m.diet = DIET[idx]; save(); render(); })));
+  el.appendChild(g2);
+
+  el.appendChild(labelled("Allergies",
+    chipRow(COMMON_ALLERGENS, m.allergies, (idx, opt)=>{
+      const k = m.allergies.indexOf(opt);
+      if(k>=0) m.allergies.splice(k,1); else m.allergies.push(opt);
+      save(); render();
+    }, true)));
+
+  const dis = document.createElement("input");
+  dis.type = "text"; dis.placeholder = "Dislikes, e.g. cilantro, olives";
+  dis.value = m.dislikes;
+  dis.addEventListener("input", ()=>{ m.dislikes = dis.value; save(); });
+  el.appendChild(labelled("Dislikes (optional)", dis));
+
+  return el;
+}
+
+function labelled(text, node){
+  const f = document.createElement("div");
+  f.className = "field";
+  const l = document.createElement("div");
+  l.className = "sub"; l.textContent = text;
+  f.append(l, node);
+  return f;
+}
+
+document.getElementById("addBtn").addEventListener("click", ()=>{
+  state.members.push(blankMember()); save(); render();
+});
+document.getElementById("hhName").addEventListener("input", save);
+document.getElementById("clearBtn").addEventListener("click", ()=>{
+  if(!confirm("Clear the whole household?")) return;
+  state = { householdName:"", members:[blankMember()] };
+  save(); render();
+});
+
+/* ---- Export ---- */
+function buildExport(){
+  return {
+    app:"MenuEngine",
+    step:"household",
+    householdName: state.householdName || "",
+    pax: state.members.length,
+    members: state.members.map(m=>({
+      name: m.name || "Unnamed",
+      ageGroup: m.ageGroup,
+      spice: SPICE[m.spice].replace(/^[^A-Za-z]+/, "").trim(),
+      portion: PORTION[m.portion],
+      diet: m.diet,
+      allergies: m.allergies,
+      dislikes: m.dislikes ? m.dislikes.split(",").map(s=>s.trim()).filter(Boolean) : []
+    }))
+  };
+}
+
+const modalBg = document.getElementById("modalBg");
+const jsonOut = document.getElementById("jsonOut");
+async function copyText(t){
+  try{ await navigator.clipboard.writeText(t); return true; }
+  catch(e){ jsonOut.select(); try{ document.execCommand("copy"); return true; }catch(_){ return false; } }
+}
+document.getElementById("copyBtn").addEventListener("click", async ()=>{
+  const t = JSON.stringify(buildExport(), null, 2);
+  jsonOut.value = t; modalBg.classList.add("show");
+  toast(await copyText(t) ? "Copied ✓" : "Select all & copy");
+});
+document.getElementById("copyAgain").addEventListener("click", async ()=>{
+  toast(await copyText(jsonOut.value) ? "Copied ✓" : "Select all & copy");
+});
+document.getElementById("closeModal").addEventListener("click", ()=>modalBg.classList.remove("show"));
+modalBg.addEventListener("click", e=>{ if(e.target===modalBg) modalBg.classList.remove("show"); });
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"),1800);
+}
+
+render();
+</script>
+</body>
+</html>

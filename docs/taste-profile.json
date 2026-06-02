@@ -1,0 +1,31 @@
+{
+  "app": "MenuEngine",
+  "step": "taste-setup",
+  "capturedOn": "2026-06-02",
+  "total": 50,
+  "byCuisine": {
+    "Thai": [
+      "Pad Thai", "Tom Yum Goong", "Green Curry", "Pad Krapow", "Som Tum",
+      "Massaman Curry", "Khao Pad", "Tom Kha Gai", "Pad See Ew", "Larb",
+      "Mango Sticky Rice", "Khao Man Gai", "Chicken Satay", "Panang Curry"
+    ],
+    "Chinese": [
+      "Kung Pao Chicken", "Mapo Tofu", "Sweet & Sour Pork", "Yangzhou Fried Rice",
+      "Char Siu", "Pork Dumplings", "Hot & Sour Soup", "Beef & Broccoli",
+      "Wonton Noodle Soup", "Century Egg Congee", "Garlic Stir-fried Greens", "Braised Pork Belly"
+    ],
+    "Japanese": [
+      "Sushi & Maki", "Ramen", "Chicken Teriyaki", "Tonkatsu", "Japanese Curry Rice",
+      "Gyoza", "Miso Soup", "Tempura", "Gyudon", "Yakitori",
+      "Onigiri", "Udon", "Okonomiyaki", "Katsudon"
+    ],
+    "American": [
+      "Cheeseburger", "BBQ Ribs", "Mac & Cheese", "Roast Chicken", "Caesar Salad",
+      "Grilled Cheese & Tomato Soup", "Fried Chicken", "Cobb Salad", "Pulled Pork Sandwich", "Pizza"
+    ]
+  },
+  "derived": {
+    "cuisineBalance": { "Thai": 14, "Chinese": 12, "Japanese": 14, "American": 10 },
+    "notes": "Broad omnivore palate across all four cuisines. Strong appetite for rice & noodle mains, soups (Tom Yum, Hot & Sour, Miso, Wonton), and grilled/braised proteins (satay, char siu, yakitori, braised pork belly). Comfortable with spice (Pad Krapow, Kung Pao, Mapo Tofu). Likes a few salads (Som Tum, Caesar, Cobb) and one dessert (Mango Sticky Rice)."
+  }
+}

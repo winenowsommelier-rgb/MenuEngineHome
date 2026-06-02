@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>MenuEngine · Taste Setup</title>
+<style>
+  :root{
+    --bg:#fff7f0; --card:#ffffff; --ink:#2b2b2b; --muted:#8a8175;
+    --accent:#ff7a1a; --accent-soft:#fff0e4; --line:#efe6da; --ok:#1faa59;
+    --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.45;
+    padding-bottom:96px;
+  }
+  header{
+    text-align:center; padding:24px 18px 8px;
+  }
+  header h1{margin:0; font-size:24px; letter-spacing:-.5px}
+  header h1 .e{font-style:normal}
+  header p{margin:6px 0 0; color:var(--muted); font-size:14px}
+  .hint{
+    margin:14px auto 0; max-width:560px; background:var(--accent-soft);
+    color:#9a4a00; border:1px solid #ffd9b8; border-radius:12px;
+    padding:10px 14px; font-size:13px; text-align:center;
+  }
+  .tabs{
+    position:sticky; top:0; z-index:5; background:var(--bg);
+    display:flex; gap:6px; justify-content:center; flex-wrap:wrap;
+    padding:14px 12px 10px; border-bottom:1px solid var(--line);
+  }
+  .tab{
+    border:1px solid var(--line); background:var(--card); color:var(--ink);
+    border-radius:999px; padding:8px 14px; font-size:14px; cursor:pointer;
+    display:flex; align-items:center; gap:6px; transition:.15s;
+  }
+  .tab .count{
+    background:var(--line); color:var(--muted); border-radius:999px;
+    font-size:11px; padding:1px 7px; min-width:18px; text-align:center;
+  }
+  .tab[aria-selected="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+  .tab[aria-selected="true"] .count{background:rgba(255,255,255,.25); color:#fff}
+  main{max-width:760px; margin:0 auto; padding:16px 12px}
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:10px;
+  }
+  .card{
+    position:relative; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:14px 12px; cursor:pointer; text-align:left;
+    box-shadow:var(--shadow); transition:transform .08s, border-color .15s, background .15s;
+    user-select:none;
+  }
+  .card:active{transform:scale(.97)}
+  .card .emoji{font-size:26px; display:block; margin-bottom:6px}
+  .card .name{font-size:15px; font-weight:600}
+  .card .heart{
+    position:absolute; top:10px; right:10px; font-size:16px; opacity:0;
+    transform:scale(.6); transition:.15s;
+  }
+  .card[aria-pressed="true"]{
+    background:var(--accent-soft); border-color:var(--accent);
+  }
+  .card[aria-pressed="true"] .heart{opacity:1; transform:scale(1)}
+  .section-title{
+    grid-column:1/-1; margin:6px 2px 2px; font-size:12px;
+    text-transform:uppercase; letter-spacing:1px; color:var(--muted);
+  }
+  .bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:10;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(8px);
+    border-top:1px solid var(--line); padding:12px 14px;
+    display:flex; align-items:center; gap:12px; justify-content:space-between;
+    max-width:760px; margin:0 auto;
+  }
+  .bar .tally{font-size:14px}
+  .bar .tally b{color:var(--accent); font-size:18px}
+  .actions{display:flex; gap:8px}
+  button.btn{
+    border:none; border-radius:10px; padding:11px 16px; font-size:14px;
+    font-weight:600; cursor:pointer; transition:.15s;
+  }
+  .btn.ghost{background:var(--card); border:1px solid var(--line); color:var(--muted)}
+  .btn.primary{background:var(--accent); color:#fff}
+  .btn.primary:disabled{opacity:.4; cursor:not-allowed}
+  .toast{
+    position:fixed; left:50%; bottom:84px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px;
+    font-size:14px; opacity:0; pointer-events:none; transition:.25s; z-index:20;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .next{
+    max-width:760px; margin:22px auto 0; padding:0 12px; text-align:center;
+  }
+  .next a{
+    display:inline-block; color:var(--accent); text-decoration:none;
+    font-weight:600; font-size:14px; border-bottom:1px dashed var(--accent);
+  }
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:30;
+    display:none; align-items:center; justify-content:center; padding:18px;
+  }
+  .modal-bg.show{display:flex}
+  .modal{
+    background:#fff; border-radius:16px; width:100%; max-width:520px;
+    padding:18px; box-shadow:var(--shadow);
+  }
+  .modal h3{margin:0 0 8px}
+  .modal textarea{
+    width:100%; height:200px; border:1px solid var(--line); border-radius:10px;
+    padding:10px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px;
+    resize:vertical;
+  }
+  .modal .row{display:flex; gap:8px; justify-content:flex-end; margin-top:12px}
+</style>
+</head>
+<body>
+  <header>
+    <h1><span class="e">🍽️</span> MenuEngine · Taste Setup</h1>
+    <p>Tap every dish your family enjoys. We'll learn your style and build your menus.</p>
+    <div class="hint">Tap a card to ❤️ it — it turns orange and the counter ticks up. Pick 15–30 across all cuisines.</div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+
+  <main>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div class="next">
+    <a href="profile.html">Next: set up your household &amp; members →</a>
+  </div>
+
+  <div class="bar">
+    <div class="tally"><b id="count">0</b> dishes loved</div>
+    <div class="actions">
+      <button class="btn ghost" id="clearBtn">Clear</button>
+      <button class="btn primary" id="copyBtn" disabled>Copy my picks</button>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h3>Your picks 📋</h3>
+      <p style="margin:0 0 8px;color:var(--muted);font-size:13px">Copied to your clipboard. Paste this back to MenuEngine to seed your menus.</p>
+      <textarea id="jsonOut" readonly></textarea>
+      <div class="row">
+        <button class="btn ghost" id="closeModal">Close</button>
+        <button class="btn primary" id="copyAgain">Copy again</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ---- Dish library: the exact card set for MenuEngine taste-setup ---- */
+const CUISINES = [
+  { key:"Thai", flag:"🇹🇭", dishes:[
+    ["Pad Thai","🍜"],["Tom Yum Goong","🍲"],["Green Curry","🍛"],["Pad Krapow","🌶️"],
+    ["Som Tum","🥗"],["Massaman Curry","🍛"],["Khao Pad","🍚"],["Tom Kha Gai","🥥"],
+    ["Pad See Ew","🍜"],["Larb","🥩"],["Mango Sticky Rice","🥭"],["Khao Man Gai","🍗"],
+    ["Chicken Satay","🍢"],["Panang Curry","🍛"]
+  ]},
+  { key:"Chinese", flag:"🇨🇳", dishes:[
+    ["Kung Pao Chicken","🌶️"],["Mapo Tofu","🥘"],["Sweet & Sour Pork","🍖"],["Yangzhou Fried Rice","🍚"],
+    ["Char Siu","🥩"],["Pork Dumplings","🥟"],["Hot & Sour Soup","🍲"],["Beef & Broccoli","🥦"],
+    ["Wonton Noodle Soup","🍜"],["Century Egg Congee","🥣"],["Garlic Stir-fried Greens","🥬"],["Braised Pork Belly","🍖"]
+  ]},
+  { key:"Japanese", flag:"🇯🇵", dishes:[
+    ["Sushi & Maki","🍣"],["Ramen","🍜"],["Chicken Teriyaki","🍗"],["Tonkatsu","🍤"],
+    ["Japanese Curry Rice","🍛"],["Gyoza","🥟"],["Miso Soup","🍵"],["Tempura","🍤"],
+    ["Gyudon","🍚"],["Yakitori","🍢"],["Onigiri","🍙"],["Udon","🍜"],
+    ["Okonomiyaki","🥞"],["Katsudon","🍱"]
+  ]},
+  { key:"American", flag:"🇺🇸", dishes:[
+    ["Cheeseburger","🍔"],["BBQ Ribs","🍖"],["Mac & Cheese","🧀"],["Roast Chicken","🍗"],
+    ["Caesar Salad","🥗"],["Grilled Cheese & Tomato Soup","🥪"],["Fried Chicken","🍗"],["Cobb Salad","🥗"],
+    ["Pulled Pork Sandwich","🥪"],["Pizza","🍕"]
+  ]}
+];
+
+const STORE_KEY = "menuengine.tastePicks.v1";
+const grid = document.getElementById("grid");
+const tabsEl = document.getElementById("tabs");
+const countEl = document.getElementById("count");
+const copyBtn = document.getElementById("copyBtn");
+
+let selected = loadPicks();   // Set of dish names
+let activeCuisine = CUISINES[0].key;
+
+function loadPicks(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+    return new Set(Array.isArray(raw) ? raw : []);
+  }catch(e){ return new Set(); }
+}
+function savePicks(){
+  localStorage.setItem(STORE_KEY, JSON.stringify([...selected]));
+}
+
+/* ---- Render tabs ---- */
+function renderTabs(){
+  tabsEl.innerHTML = "";
+  CUISINES.forEach(c=>{
+    const n = c.dishes.filter(d=>selected.has(d[0])).length;
+    const t = document.createElement("button");
+    t.className = "tab";
+    t.setAttribute("role","tab");
+    t.setAttribute("aria-selected", String(c.key===activeCuisine));
+    t.dataset.cuisine = c.key;
+    t.innerHTML = `${c.flag} ${c.key} <span class="count">${n}</span>`;
+    tabsEl.appendChild(t);
+  });
+}
+
+/* ---- Render cards for active cuisine ---- */
+function renderGrid(){
+  const c = CUISINES.find(x=>x.key===activeCuisine);
+  grid.innerHTML = "";
+  c.dishes.forEach(([name,emoji])=>{
+    const card = document.createElement("button");
+    card.className = "card";
+    card.dataset.dish = name;
+    card.setAttribute("aria-pressed", String(selected.has(name)));
+    card.innerHTML = `<span class="heart">❤️</span>
+      <span class="emoji">${emoji}</span>
+      <span class="name">${name}</span>`;
+    grid.appendChild(card);
+  });
+}
+
+function updateCount(){
+  countEl.textContent = selected.size;
+  copyBtn.disabled = selected.size === 0;
+}
+
+/* ---- Single delegated click handler (robust on touch + desktop) ---- */
+grid.addEventListener("click", e=>{
+  const card = e.target.closest(".card");
+  if(!card) return;
+  const dish = card.dataset.dish;
+  if(selected.has(dish)) selected.delete(dish);
+  else selected.add(dish);
+  card.setAttribute("aria-pressed", String(selected.has(dish)));
+  savePicks(); updateCount(); renderTabs();
+});
+
+tabsEl.addEventListener("click", e=>{
+  const tab = e.target.closest(".tab");
+  if(!tab) return;
+  activeCuisine = tab.dataset.cuisine;
+  renderTabs(); renderGrid();
+});
+
+/* ---- Export ---- */
+function buildExport(){
+  const byCuisine = {};
+  CUISINES.forEach(c=>{
+    const picks = c.dishes.filter(d=>selected.has(d[0])).map(d=>d[0]);
+    if(picks.length) byCuisine[c.key] = picks;
+  });
+  return {
+    app:"MenuEngine",
+    step:"taste-setup",
+    total:selected.size,
+    byCuisine
+  };
+}
+
+const modalBg = document.getElementById("modalBg");
+const jsonOut = document.getElementById("jsonOut");
+
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    return true;
+  }catch(e){
+    jsonOut.select();
+    try{ document.execCommand("copy"); return true; }catch(_){ return false; }
+  }
+}
+
+copyBtn.addEventListener("click", async ()=>{
+  const text = JSON.stringify(buildExport(), null, 2);
+  jsonOut.value = text;
+  modalBg.classList.add("show");
+  const ok = await copyToClipboard(text);
+  toast(ok ? "Copied to clipboard ✓" : "Select all & copy the text");
+});
+document.getElementById("copyAgain").addEventListener("click", async ()=>{
+  const ok = await copyToClipboard(jsonOut.value);
+  toast(ok ? "Copied again ✓" : "Select all & copy the text");
+});
+document.getElementById("closeModal").addEventListener("click", ()=>modalBg.classList.remove("show"));
+modalBg.addEventListener("click", e=>{ if(e.target===modalBg) modalBg.classList.remove("show"); });
+
+document.getElementById("clearBtn").addEventListener("click", ()=>{
+  if(selected.size && !confirm("Clear all picks?")) return;
+  selected.clear(); savePicks(); updateCount(); renderTabs(); renderGrid();
+});
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove("show"), 1800);
+}
+
+/* ---- Init ---- */
+renderTabs(); renderGrid(); updateCount();
+</script>
+</body>
+</html>
