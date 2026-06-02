@@ -52,11 +52,12 @@ Reads are gated by unguessable share slugs; writes by a shared token. See
 - [x] **Step 3 — Schema** (`docs/schema.sql` + Google Sheet tabs)
   Households, members, recipes, taste_picks, menus, menu_items. The live store
   is the Google Sheet; the SQL file is kept as a reference.
-- [x] **Step 4 — Google Sheets backend**
+- [x] **Step 4 — Google Sheets backend** ✅ deployed & verified
   Spreadsheet "MenuEngine DB" created in Drive. Apps Script web app
-  (`backend/gsheet/Code.gs`) exposes read/write JSON endpoints. Client glue in
-  `api.js` + `config.example.js`. Deploy steps in `backend/gsheet/SETUP.md`.
-  *(Pending the one-time manual deploy of the Apps Script + filling `config.js`.)*
+  (`backend/gsheet/Code.gs`) deployed and live; read + write round-trips
+  confirmed. Client glue in `api.js` + `config.example.js`; live URL + token in
+  local `config.js` (gitignored). Seeded household "My Family" with all 50
+  taste picks. Deploy steps in `backend/gsheet/SETUP.md`.
 - [ ] **Step 5 — Menu generation**
   The Claude process reads the taste profile + household, uses web search for
   fresh ideas, matches the curated library, fills gaps by generation, and
