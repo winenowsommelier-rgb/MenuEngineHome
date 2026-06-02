@@ -72,7 +72,7 @@
       "health": "Overweight",
       "goals": "High protein (weight training); weight management",
       "texture": "regular",
-      "notes": "Source listed as '3 son' a second time — confirm this is a distinct person."
+      "notes": "Distinct person from N3 (confirmed)."
     },
     {
       "code": "N5", "name": "Note", "sex": "F", "age": 45,
@@ -112,7 +112,7 @@
   ],
   "householdGuardrails": {
     "avoidProteins": ["beef"],
-    "avoidProteinsNotes": "No beef (Dad, Mom). No fish (Eldest Son). No raw fish (Mom) — so no sashimi/sushi-grade raw; keep dishes fish-free where shared, cooked fish only ever optional.",
+    "avoidProteinsNotes": "No beef (Dad, Mom). No fish for Eldest Son — but shrimp/shellfish ARE fine for the family. No raw fish for Mom (cooked is OK); so no sashimi/sushi-grade raw in shared dishes.",
     "spiceStrategy": "Cook mild by default; serve chili/heat on the side so Dad gets spice while GGM, Mom and the kids stay mild.",
     "softOptionsFor": ["GGM (Alzheimer's)", "Neo (age 4)", "Mom (comfort)"],
     "diabetesAwareFor": "Dad — limit added sugar (go easy on sweet-and-sour, teriyaki sugar, sticky-rice desserts); offer brown rice and extra vegetables.",
