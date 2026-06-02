@@ -21,8 +21,10 @@ const WRITE_TOKEN = 'CHANGE_ME_to_a_long_random_string';
 
 const SHEETS = {
   Households: ['id', 'name', 'share_slug', 'locale', 'created_at'],
-  Members:    ['id', 'household_id', 'name', 'age_group', 'spice_level',
-               'portion', 'diet', 'allergies', 'dislikes', 'created_at'],
+  Members:    ['id', 'household_id', 'code', 'name', 'sex', 'age',
+               'weight_kg', 'height_cm', 'diet', 'spice_level', 'portion',
+               'allergies', 'dislikes', 'health', 'goals', 'texture',
+               'notes', 'created_at'],
   TastePicks: ['id', 'household_id', 'member_id', 'dish_name', 'cuisine',
                'sentiment', 'created_at'],
   Recipes:    ['id', 'name', 'cuisine', 'course', 'proteins', 'tags',
@@ -98,11 +100,19 @@ function doPost(e) {
       deleteWhere('Members', 'household_id', id);
       (body.members || []).forEach(function (m) {
         upsert('Members', {
-          id: uid(), household_id: id, name: m.name || 'Unnamed',
-          age_group: m.ageGroup || 'Adult', spice_level: m.spice != null ? m.spice : 1,
-          portion: m.portion || 'Regular', diet: m.diet || 'Omnivore',
+          id: uid(), household_id: id,
+          code: m.code || '', name: m.name || 'Unnamed', sex: m.sex || '',
+          age: m.age != null ? m.age : '',
+          weight_kg: m.weight_kg != null ? m.weight_kg : '',
+          height_cm: m.height_cm != null ? m.height_cm : '',
+          diet: m.diet || 'Omnivore',
+          spice_level: m.spice != null ? m.spice : 1,
+          portion: m.portion || 'Regular',
           allergies: (m.allergies || []).join('|'),
-          dislikes: (m.dislikes || []).join('|'), created_at: now(),
+          dislikes: (m.dislikes || []).join('|'),
+          health: m.health || '', goals: m.goals || '',
+          texture: m.texture || '', notes: m.notes || '',
+          created_at: now(),
         });
       });
       return json({ ok: true, id: id, share_slug: slug });

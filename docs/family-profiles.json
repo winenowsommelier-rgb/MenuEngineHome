@@ -1,0 +1,123 @@
+{
+  "app": "MenuEngine",
+  "step": "household",
+  "capturedOn": "2026-06-02",
+  "householdName": "My Family",
+  "householdSlug": "pv7unk2v",
+  "pax": 11,
+  "loginModel": "Each member has a short code; on open they pick their code first. Per-person food profiles to be built later.",
+  "members": [
+    {
+      "code": "GGM", "name": "Great Grandma", "sex": "F", "age": 86,
+      "diet": "Omnivore", "spice": 0, "portion": "Small",
+      "dislikes": [], "allergies": [],
+      "health": "Alzheimer's disease",
+      "goals": "Easy, gentle eating",
+      "texture": "soft / easy to chew",
+      "notes": "Not much spice."
+    },
+    {
+      "code": "D", "name": "Dad", "sex": "M", "age": 68,
+      "weight_kg": 100, "height_cm": 175,
+      "diet": "Omnivore", "spice": 3, "portion": "Large",
+      "dislikes": ["beef"], "allergies": [],
+      "health": "Type 2 diabetes (เบาหวาน); overweight; smokes; drinks alcohol",
+      "goals": "Blood-sugar friendly (low refined sugar/carbs); weight management; more fiber",
+      "texture": "regular",
+      "notes": "Loves spicy; enjoys Chinese, Japanese, Thai. No beef."
+    },
+    {
+      "code": "M", "name": "Mom", "sex": "F", "age": 65,
+      "weight_kg": 60, "height_cm": 170,
+      "diet": "Omnivore", "spice": 1, "portion": "Regular",
+      "dislikes": ["beef", "raw fish"], "allergies": [],
+      "health": "Stress / quick temper",
+      "goals": "Soft, delicious comfort food",
+      "texture": "soft-ish / comforting",
+      "notes": "Cooked fish OK, no raw fish. No beef."
+    },
+    {
+      "code": "N1", "name": "Eldest Son", "sex": "M", "age": 39,
+      "weight_kg": 107, "height_cm": 180,
+      "diet": "Omnivore", "spice": 2, "portion": "Large",
+      "dislikes": ["fish"], "allergies": [],
+      "health": "Overweight; sedentary management work",
+      "goals": "High protein (weight training); more fiber; weight management",
+      "texture": "regular",
+      "notes": "The 50 taste picks mainly reflect his preferences."
+    },
+    {
+      "code": "N2", "name": "Second Son", "sex": "M", "age": 37,
+      "weight_kg": 70, "height_cm": 185,
+      "diet": "Omnivore", "spice": 2, "portion": "Large",
+      "dislikes": [], "allergies": [],
+      "health": "Lean / athletic",
+      "goals": "High protein (weight training)",
+      "texture": "regular", "notes": ""
+    },
+    {
+      "code": "N3", "name": "Third Son", "sex": "M", "age": 36,
+      "weight_kg": 107, "height_cm": 185,
+      "diet": "Omnivore", "spice": 2, "portion": "Large",
+      "dislikes": [], "allergies": [],
+      "health": "Overweight",
+      "goals": "High protein (weight training); weight management",
+      "texture": "regular", "notes": ""
+    },
+    {
+      "code": "N4", "name": "Fourth Son", "sex": "M", "age": 36,
+      "weight_kg": 107, "height_cm": 185,
+      "diet": "Omnivore", "spice": 2, "portion": "Large",
+      "dislikes": [], "allergies": [],
+      "health": "Overweight",
+      "goals": "High protein (weight training); weight management",
+      "texture": "regular",
+      "notes": "Source listed as '3 son' a second time — confirm this is a distinct person."
+    },
+    {
+      "code": "N5", "name": "Note", "sex": "F", "age": 45,
+      "weight_kg": 45, "height_cm": 160,
+      "diet": "Omnivore", "spice": 2, "portion": "Regular",
+      "dislikes": [], "allergies": [],
+      "health": "Lean / very active",
+      "goals": "High protein (weight training); ballet teacher",
+      "texture": "regular", "notes": ""
+    },
+    {
+      "code": "N6", "name": "Neon", "sex": "F", "age": 10,
+      "weight_kg": 50, "height_cm": 155,
+      "diet": "Omnivore", "spice": 1, "portion": "Regular",
+      "dislikes": [], "allergies": [],
+      "health": "Active child",
+      "goals": "Balanced, growing; studying ballet",
+      "texture": "regular", "notes": "Child — keep it mild and fun."
+    },
+    {
+      "code": "N7", "name": "Neo", "sex": "M", "age": 4,
+      "weight_kg": 15,
+      "diet": "Omnivore", "spice": 0, "portion": "Small",
+      "dislikes": [], "allergies": [],
+      "health": "Toddler",
+      "goals": "Gentle, kid-friendly",
+      "texture": "soft / kid-friendly",
+      "notes": "Young child — mild, small pieces."
+    },
+    {
+      "code": "L", "name": "Lookaew", "sex": "F", "age": 35,
+      "weight_kg": 55, "height_cm": 165,
+      "diet": "Omnivore", "spice": 2, "portion": "Regular",
+      "dislikes": [], "allergies": [],
+      "health": "", "goals": "", "texture": "regular", "notes": ""
+    }
+  ],
+  "householdGuardrails": {
+    "avoidProteins": ["beef"],
+    "avoidProteinsNotes": "No beef (Dad, Mom). No fish (Eldest Son). No raw fish (Mom) — so no sashimi/sushi-grade raw; keep dishes fish-free where shared, cooked fish only ever optional.",
+    "spiceStrategy": "Cook mild by default; serve chili/heat on the side so Dad gets spice while GGM, Mom and the kids stay mild.",
+    "softOptionsFor": ["GGM (Alzheimer's)", "Neo (age 4)", "Mom (comfort)"],
+    "diabetesAwareFor": "Dad — limit added sugar (go easy on sweet-and-sour, teriyaki sugar, sticky-rice desserts); offer brown rice and extra vegetables.",
+    "highProteinFor": ["Dad", "Eldest Son", "Second Son", "Third Son", "Fourth Son", "Note"],
+    "fiberFocusFor": ["Dad", "Eldest Son"],
+    "portionNote": "Large household (11). Scale recipes up; several big eaters in weight training."
+  }
+}

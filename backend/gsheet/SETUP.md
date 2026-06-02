@@ -69,8 +69,9 @@ You should see `{"ok":true,"app":"MenuEngine"}`.
 - `?action=getMenu&slug=<share_slug>` → menu + items (sorted)
 
 **Writes** (POST JSON, must include `"token"`):
-- `saveHousehold` → `{token, name, members:[{name,ageGroup,spice,portion,diet,allergies,dislikes}]}`
-  → returns `{id, share_slug}`
+- `saveHousehold` → `{token, name, members:[{code,name,sex,age,weight_kg,height_cm,diet,spice,portion,allergies,dislikes,health,goals,texture,notes}]}`
+  → returns `{id, share_slug}`. Pass `id` + `share_slug` to update an existing
+  household in place (keeps the share link stable).
 - `savePicks` → `{token, household_id, byCuisine:{Thai:[...],...}}`
 - `saveMenu` → `{token, household_id, title, period, starts_on, items:[{dish_name,cuisine,meal_slot,scheduled_date,servings,notes,recipe_id,position}]}`
   → returns `{id, share_slug}`

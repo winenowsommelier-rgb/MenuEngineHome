@@ -69,9 +69,22 @@ Reads are gated by unguessable share slugs; writes by a shared token. See
   `config.js` (committed, read-only apiUrl + slugs) vs `config.local.js`
   (gitignored, write token).
 
+- [x] **Deploy** ✅ live on Vercel at https://menu-engine-home.vercel.app
+  (Git integration; auto-deploys on push). `config.local.js` token excluded.
+- [x] **Family profiles captured** — 11 members with codes, ages, health,
+  diet restrictions and goals in `docs/family-profiles.json`. Member schema
+  upgraded (code/sex/age/weight/height/health/goals/texture/notes) in
+  `Code.gs` + `docs/schema.sql`. Menu regenerated to respect every constraint
+  (beef-free, fish-light, soft options for GGM & Neo, diabetes-aware for Dad,
+  high-protein for the training crew). *(Storing members in the sheet needs the
+  one-time Code.gs redeploy — see below.)*
+
 ## Next ideas
 
-- [ ] Deploy to Vercel (static — just point it at the repo; no build step).
+- [ ] Redeploy the updated `Code.gs` (new version, SAME deployment → same URL),
+  then save the 11 members into the sheet.
+- [ ] "Log in by code" picker: choose your member code on open; later each
+  member builds their own food profile + monthly menu.
 - [ ] Wire `index.html` / `profile.html` "Save" buttons to the API directly
   (currently copy-paste; needs the write token, so route via a tiny serverless
   proxy or a prompt).

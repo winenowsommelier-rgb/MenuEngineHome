@@ -28,17 +28,24 @@ create table if not exists households (
 create table if not exists members (
   id           uuid primary key default gen_random_uuid(),
   household_id uuid not null references households(id) on delete cascade,
+  code         text,                               -- short per-person login code (e.g. GGM, D, N1)
   name         text not null default 'Unnamed',
-  age_group    text not null default 'Adult'      -- Toddler|Child|Teen|Adult|Senior
-                 check (age_group in ('Toddler','Child','Teen','Adult','Senior')),
+  sex          text,                               -- M|F|other
+  age          int,
+  weight_kg    numeric,
+  height_cm    numeric,
+  diet         text not null default 'Omnivore'    -- Omnivore|Vegetarian|Vegan|Pescatarian|Halal|Kosher
+                 check (diet in ('Omnivore','Vegetarian','Vegan','Pescatarian','Halal','Kosher')),
   spice_level  smallint not null default 1         -- 0 none .. 3 hot
                  check (spice_level between 0 and 3),
   portion      text not null default 'Regular'     -- Small|Regular|Large
                  check (portion in ('Small','Regular','Large')),
-  diet         text not null default 'Omnivore'    -- Omnivore|Vegetarian|Vegan|Pescatarian|Halal|Kosher
-                 check (diet in ('Omnivore','Vegetarian','Vegan','Pescatarian','Halal','Kosher')),
   allergies    text[] not null default '{}',
-  dislikes     text[] not null default '{}',
+  dislikes     text[] not null default '{}',       -- e.g. beef, fish, raw fish
+  health       text,                               -- conditions: diabetes, Alzheimer's, etc.
+  goals        text,                               -- high protein, more fiber, weight mgmt, soft food
+  texture      text,                               -- soft / easy to chew / regular
+  notes        text,
   created_at   timestamptz not null default now()
 );
 create index if not exists members_household_idx on members(household_id);
