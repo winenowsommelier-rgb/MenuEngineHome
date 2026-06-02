@@ -61,19 +61,27 @@ After deploying, open in a browser:
 
 You should see `{"ok":true,"app":"MenuEngine"}`.
 
-## API reference
+## API reference (v2)
 
-**Reads** (GET):
-- `?action=ping` → health check
-- `?action=getHousehold&slug=<share_slug>` → household + members + picks
-- `?action=getMenu&slug=<share_slug>` → menu + items (sorted)
+Tabs built by `setup()`: Households, Members, TastePicks, Recipes, Menus,
+MenuItems, **Meals, MealDishes, Votes, Ingredients**.
 
-**Writes** (POST JSON, must include `"token"`):
-- `saveHousehold` → `{token, name, members:[{code,name,sex,age,weight_kg,height_cm,diet,spice,portion,allergies,dislikes,health,goals,texture,notes}]}`
-  → returns `{id, share_slug}`. Pass `id` + `share_slug` to update an existing
-  household in place (keeps the share link stable).
-- `savePicks` → `{token, household_id, byCuisine:{Thai:[...],...}}`
-- `saveMenu` → `{token, household_id, title, period, starts_on, items:[{dish_name,cuisine,meal_slot,scheduled_date,servings,notes,recipe_id,position}]}`
-  → returns `{id, share_slug}`
+**Reads** (GET, gated by share slug):
+- `?action=ping` → health check (`{ok:true, v:2}`)
+- `?action=getHousehold&slug=…` → household + members + picks
+- `?action=getMenu&slug=…` → legacy single menu + items
+- `?action=getWeek&slug=…&start=YYYY-MM-DD` → members + the week's meals, each
+  with its dishes (the 3-meals-a-day model)
+- `?action=getVotes&slug=…&start=YYYY-MM-DD` → all member votes for the week
+
+**Admin writes** (POST JSON, must include the `"token"`):
+- `saveHousehold` → `{token, id?, share_slug?, name, members:[{code,name,sex,age,weight_kg,height_cm,diet,spice,portion,portion_factor,lunchWeekday,allergies,dislikes,health,goals,texture,notes}]}`
+- `savePicks` → `{token, household_id, byCuisine:{Thai:[…],…}}`
+- `saveMenu` → `{token, household_id, title, period, starts_on, items:[…]}` (legacy)
+- `publishWeek` → `{token, slug|household_id, week_start, status, meals:[{date,meal_type,position,dishes:[{dish_name,cuisine,role,notes,planned_servings,position}]}]}`
+
+**Member write** (POST JSON, gated by household `slug` — NO admin token):
+- `submitVotes` → `{slug, member_code, week_start, vetoes:[{date,meal_type,reason}]}`
+  (replaces that member's votes for the week)
 
 Array fields (`allergies`, `dislikes`) are stored pipe-`|`-joined in cells.

@@ -40,6 +40,9 @@ create table if not exists members (
                  check (spice_level between 0 and 3),
   portion      text not null default 'Regular'     -- Small|Regular|Large
                  check (portion in ('Small','Regular','Large')),
+  portion_factor numeric not null default 1.0,      -- relative serving size (0.4 toddler .. 1.5 big eater)
+  lunch_weekday text not null default 'home'        -- home|away (weekday lunch attendance)
+                 check (lunch_weekday in ('home','away')),
   allergies    text[] not null default '{}',
   dislikes     text[] not null default '{}',       -- e.g. beef, fish, raw fish
   health       text,                               -- conditions: diabetes, Alzheimer's, etc.
@@ -120,6 +123,60 @@ create table if not exists menu_items (
 );
 create index if not exists menu_items_menu_idx on menu_items(menu_id);
 
+-- ===== v2: 3-meals-a-day monthly model =====================================
+create table if not exists meals (
+  id           uuid primary key default gen_random_uuid(),
+  household_id uuid not null references households(id) on delete cascade,
+  week_start   date not null,                     -- Monday of the published week
+  date         date not null,
+  meal_type    text not null                       -- breakfast|lunch|dinner
+                 check (meal_type in ('breakfast','lunch','dinner')),
+  status       text not null default 'published'   -- draft|published|locked
+                 check (status in ('draft','published','locked')),
+  position     int not null default 0,
+  created_at   timestamptz not null default now()
+);
+create index if not exists meals_household_week_idx on meals(household_id, week_start);
+
+create table if not exists meal_dishes (
+  id               uuid primary key default gen_random_uuid(),
+  meal_id          uuid not null references meals(id) on delete cascade,
+  dish_name        text not null,
+  cuisine          text,
+  role             text,                            -- main|soft|soup|veg|protein|base|dessert
+  recipe_id        uuid references recipes(id) on delete set null,
+  planned_servings numeric,                         -- set by the portion engine when locked
+  notes            text,
+  position         int not null default 0,
+  created_at       timestamptz not null default now()
+);
+create index if not exists meal_dishes_meal_idx on meal_dishes(meal_id);
+
+create table if not exists votes (
+  id           uuid primary key default gen_random_uuid(),
+  household_id uuid not null references households(id) on delete cascade,
+  week_start   date not null,
+  date         date not null,
+  meal_type    text not null,
+  member_code  text not null,
+  vote         text not null default 'dislike',     -- dislike (extendable)
+  reason       text,
+  created_at   timestamptz not null default now(),
+  unique (household_id, member_code, date, meal_type)
+);
+create index if not exists votes_household_week_idx on votes(household_id, week_start);
+
+create table if not exists ingredients (
+  id              uuid primary key default gen_random_uuid(),
+  recipe_id       uuid references recipes(id) on delete cascade,
+  item            text not null,
+  qty_per_serving numeric,
+  unit            text,
+  aisle           text,                              -- produce|meat & seafood|dairy & egg|pantry|frozen|other
+  created_at      timestamptz not null default now()
+);
+create index if not exists ingredients_recipe_idx on ingredients(recipe_id);
+
 -- ===== Generation log (Claude runs) ========================================
 create table if not exists generations (
   id           uuid primary key default gen_random_uuid(),
@@ -139,6 +196,10 @@ alter table recipes     enable row level security;
 alter table taste_picks enable row level security;
 alter table menus       enable row level security;
 alter table menu_items  enable row level security;
+alter table meals       enable row level security;
+alter table meal_dishes enable row level security;
+alter table votes       enable row level security;
+alter table ingredients enable row level security;
 alter table generations enable row level security;
 -- No anon/auth policies are defined → anon key sees nothing.
 -- Serverless functions use the service role key, which bypasses RLS.

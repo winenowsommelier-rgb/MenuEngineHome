@@ -30,11 +30,17 @@
 
   global.MenuEngineAPI = {
     isConfigured: isConfigured,
+    hasApi: function () { return !!cfg.apiUrl; },
     ping: function () { return get('ping', {}); },
     getHousehold: function (slug) { return get('getHousehold', { slug: slug }); },
     getMenu: function (slug) { return get('getMenu', { slug: slug }); },
+    getWeek: function (slug, start) { return get('getWeek', { slug: slug, start: start || '' }); },
+    getVotes: function (slug, start) { return get('getVotes', { slug: slug, start: start || '' }); },
     saveHousehold: function (data) { return post('saveHousehold', data); },
     savePicks: function (data) { return post('savePicks', data); },
-    saveMenu: function (data) { return post('saveMenu', data); }
+    saveMenu: function (data) { return post('saveMenu', data); },
+    publishWeek: function (data) { return post('publishWeek', data); },
+    // Member vote submission — gated by household slug, no admin token needed.
+    submitVotes: function (data) { return post('submitVotes', data); }
   };
 })(window);

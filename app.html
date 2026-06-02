@@ -137,7 +137,7 @@
     </div>
     <p class="who">Who's checking?</p>
     <div class="members" id="memberGrid"></div>
-    <div class="footnote">Tap your name. No password needed.</div>
+    <div class="footnote" id="loginNote">Tap your name. No password needed.</div>
   </div>
 </section>
 
@@ -177,9 +177,15 @@
   </div>
 </section>
 
+<script src="config.js"></script>
+<script src="config.local.js" onerror="void 0"></script>
+<script src="api.js"></script>
 <script>
-/* ============================ Data (prototype) ============================ */
-const MEMBERS = [
+/* ============================ Sample data (fallback) ============================
+   Used until the backend has a published week. Once the Google Sheet has data
+   for WEEK_START, the app loads it live and replaces these. */
+const WEEK_START = "2026-06-08";
+const SAMPLE_MEMBERS = [
   {code:"GGM", name:"Great Grandma", av:"👵", factor:0.6, lunchWeekday:"home", badges:["Soft food","Mild"]},
   {code:"D",   name:"Dad",           av:"🧔", factor:1.0, lunchWeekday:"home", badges:["No beef","Spicy OK 🌶️","Low sugar"]},
   {code:"M",   name:"Mom",           av:"👩", factor:0.9, lunchWeekday:"home", badges:["No beef","No raw fish","Comfort"]},
@@ -196,8 +202,8 @@ const MEMBERS = [
 const MEAL_WEIGHT = {breakfast:0.8, lunch:0.9, dinner:1.0};
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-// 7 days, each with breakfast/lunch/dinner -> dishes {name, cuisine, role, note}
-const WEEK = [
+// 7 days, each with breakfast/lunch/dinner -> dishes {n, c, r, note}
+const SAMPLE_WEEK = [
   { date:"2026-06-08",
     breakfast:[{n:"Chicken congee",c:"Chinese",r:"soft",note:"Gentle & warm to start"},{n:"Boiled eggs",c:"Home",r:"protein"},{n:"Papaya",c:"Home",r:"fruit"}],
     lunch:[{n:"Khao Man Gai",c:"Thai",r:"main",note:"Poached chicken & rice"},{n:"Cucumber",c:"Home",r:"veg"}],
@@ -229,6 +235,67 @@ const WEEK = [
 ];
 
 const MEAL_ICON = {breakfast:"☀️", lunch:"🍵", dinner:"🌙"};
+
+/* ============================ Live data ============================ */
+let MEMBERS = SAMPLE_MEMBERS.slice();
+let WEEK = SAMPLE_WEEK.slice();
+let dataSource = "preview";   // "preview" | "live"
+
+function deriveAvatar(m){
+  const age = Number(m.age)||0, f = (m.sex||"").toUpperCase()==="F";
+  if(age && age<6) return "🧒";
+  if(age && age<14) return f ? "👧" : "👦";
+  if(age && age>=75) return f ? "👵" : "👴";
+  return f ? "👩" : (m.sex ? "👨" : "🧑");
+}
+function deriveBadges(m){
+  const b = [];
+  const dis = String(m.dislikes||"").split("|").filter(Boolean);
+  dis.forEach(function(d){ b.push("No " + d); });
+  const h = String(m.health||"").toLowerCase();
+  if(/diabet|เบาหวาน/.test(h)) b.push("Low sugar");
+  if(Number(m.spice_level) >= 3) b.push("Spicy OK 🌶️");
+  if(/soft/.test(String(m.texture||"").toLowerCase())) b.push("Soft food");
+  if(/protein/.test(String(m.goals||"").toLowerCase())) b.push("High protein");
+  if(/fiber/.test(String(m.goals||"").toLowerCase())) b.push("More fiber");
+  return b;
+}
+function mapMembers(api){
+  return api.map(function(m){
+    return {
+      code: m.code || "", name: m.name || "Member", av: deriveAvatar(m),
+      factor: Number(m.portion_factor)||1.0,
+      lunchWeekday: m.lunch_weekday || "home",
+      badges: deriveBadges(m)
+    };
+  }).filter(function(m){ return m.code; });
+}
+function mapWeek(meals){
+  const byDate = {};
+  const order = [];
+  meals.forEach(function(meal){
+    const d = meal.date;
+    if(!byDate[d]){ byDate[d] = { date:d, breakfast:[], lunch:[], dinner:[] }; order.push(d); }
+    const dishes = (meal.dishes||[]).map(function(x){
+      return { n:x.dish_name, c:x.cuisine||"Home", r:x.role||"", note:x.notes||"" };
+    });
+    if(byDate[d][meal.meal_type]) byDate[d][meal.meal_type] = dishes;
+  });
+  order.sort();
+  return order.map(function(d){ return byDate[d]; });
+}
+
+async function loadData(){
+  if(!(window.MenuEngineAPI && MenuEngineAPI.hasApi() &&
+       window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug)) return;
+  try{
+    const res = await MenuEngineAPI.getWeek(MENUENGINE_CONFIG.householdSlug, WEEK_START);
+    if(res && res.ok){
+      if(res.members && res.members.length) MEMBERS = mapMembers(res.members);
+      if(res.meals && res.meals.length) { WEEK = mapWeek(res.meals); dataSource = "live"; }
+    }
+  }catch(e){ /* keep preview data */ }
+}
 
 /* ============================ State ============================ */
 let me = null;          // current member
@@ -379,9 +446,19 @@ function show(id){
   window.scrollTo(0,0);
 }
 document.getElementById("switchUser").addEventListener("click", ()=>show("login"));
-document.getElementById("sendBtn").addEventListener("click", ()=>{
+document.getElementById("sendBtn").addEventListener("click", async ()=>{
+  const list = Object.keys(vetoes).map(k=>{ const p=k.split("|"); return {date:p[0], meal_type:p[1]}; });
+  const sendBtn = document.getElementById("sendBtn");
+  if(window.MenuEngineAPI && MenuEngineAPI.hasApi() && window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug){
+    sendBtn.textContent = "Sending…"; sendBtn.disabled = true;
+    try{
+      await MenuEngineAPI.submitVotes({ slug: MENUENGINE_CONFIG.householdSlug,
+        member_code: me.code, week_start: WEEK_START, vetoes: list });
+    }catch(e){ /* still show thanks; localStorage keeps a copy */ }
+    sendBtn.textContent = "Send my feedback"; sendBtn.disabled = false;
+  }
   document.getElementById("thanksName").textContent = me.name.split(" ")[0];
-  const n = Object.keys(vetoes).length;
+  const n = list.length;
   document.getElementById("thanksMsg").textContent = n
     ? `You flagged ${n} meal${n>1?"s":""}. The admin will review everyone's feedback and finalize the week.`
     : `Looks like everything works for you! The admin will finalize the week soon.`;
@@ -392,6 +469,14 @@ document.getElementById("backBtn").addEventListener("click", ()=>show("week"));
 function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 
 renderLogin();
+loadData().then(()=>{
+  renderLogin();
+  if(me){ renderDays(); renderDay(); updateFlag(); }
+  const note = document.getElementById("loginNote");
+  if(note) note.textContent = dataSource==="live"
+    ? "Showing next week's menu · live"
+    : "Preview menu — publish a week to go live";
+});
 </script>
 </body>
 </html>
