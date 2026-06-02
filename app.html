@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>MenuEngine</title>
+<style>
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --ink:#181818; --muted:#8A8578;
+    --line:#EDE8E0; --accent:#E8623D; --accent-soft:#FBE9E2;
+    --ok:#3AA76D;
+    --thai:#E35D6A; --chinese:#D99A00; --japanese:#5B8DEF; --american:#3AA76D; --home:#9A8F7D;
+    --shadow:0 1px 2px rgba(40,30,20,.04), 0 8px 24px rgba(40,30,20,.06);
+    --radius:20px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .screen{display:none; min-height:100vh}
+  .screen.active{display:block}
+  .wrap{max-width:680px; margin:0 auto; padding:0 18px}
+
+  /* ---------- Login ---------- */
+  #login{padding:48px 0 40px}
+  .brand{text-align:center; margin-bottom:34px}
+  .brand .logo{font-size:30px}
+  .brand h1{margin:8px 0 2px; font-size:23px; font-weight:680; letter-spacing:-.4px}
+  .brand p{margin:0; color:var(--muted); font-size:15px}
+  .who{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;
+    color:var(--muted); margin:0 0 12px 2px}
+  .members{display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:12px}
+  .mcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 10px; text-align:center; cursor:pointer; box-shadow:var(--shadow);
+    transition:transform .12s ease, border-color .12s;
+  }
+  .mcard:active{transform:scale(.96)}
+  .mcard:hover{border-color:#e0d6c8}
+  .mcard .av{font-size:30px; line-height:1}
+  .mcard .nm{font-weight:620; font-size:14px; margin-top:8px}
+  .mcard .cd{display:inline-block; margin-top:6px; font-size:11px; font-weight:700;
+    color:var(--accent); background:var(--accent-soft); border-radius:999px; padding:2px 9px}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:20; background:rgba(251,250,247,.86);
+    backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex; align-items:center; gap:12px; padding:14px 0 12px}
+  .iconbtn{border:1px solid var(--line); background:var(--surface); width:38px; height:38px;
+    border-radius:12px; font-size:16px; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; flex-shrink:0}
+  .greet{flex:1; min-width:0}
+  .greet .hi{font-size:17px; font-weight:680; letter-spacing:-.3px; line-height:1.15}
+  .greet .sub{font-size:12px; color:var(--muted)}
+  .badges{display:flex; gap:6px; flex-wrap:wrap; padding:0 0 12px}
+  .badge{font-size:11px; font-weight:600; color:#6b5; border:1px solid var(--line);
+    background:var(--surface); border-radius:999px; padding:3px 9px; color:var(--muted)}
+  .badge.warn{color:var(--accent); background:var(--accent-soft); border-color:transparent}
+
+  /* ---------- Day nav ---------- */
+  .days{display:flex; gap:8px; overflow-x:auto; padding:12px 0 14px; scrollbar-width:none}
+  .days::-webkit-scrollbar{display:none}
+  .day{flex:0 0 auto; min-width:52px; text-align:center; padding:8px 6px; border-radius:14px;
+    border:1px solid var(--line); background:var(--surface); cursor:pointer; transition:.12s}
+  .day .dow{font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px}
+  .day .dnum{font-size:17px; font-weight:680; margin-top:1px}
+  .day[aria-selected="true"]{background:var(--ink); border-color:var(--ink)}
+  .day[aria-selected="true"] .dow,.day[aria-selected="true"] .dnum{color:#fff}
+
+  /* ---------- Meals ---------- */
+  .meals{padding:4px 0 120px}
+  .meal{margin:18px 0}
+  .meal-head{display:flex; align-items:center; gap:8px; margin:0 2px 9px}
+  .meal-head .ico{font-size:15px}
+  .meal-head .lbl{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted)}
+  .meal-head .qty{margin-left:auto; font-size:12px; font-weight:600; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:999px; padding:3px 10px}
+  .meal-head .qty b{color:var(--accent)}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden; transition:opacity .15s}
+  .dish{display:flex; align-items:flex-start; gap:11px; padding:13px 16px; border-top:1px solid var(--line)}
+  .dish:first-child{border-top:none}
+  .dot{width:9px; height:9px; border-radius:50%; margin-top:6px; flex-shrink:0}
+  .dot.Thai{background:var(--thai)} .dot.Chinese{background:var(--chinese)}
+  .dot.Japanese{background:var(--japanese)} .dot.American{background:var(--american)}
+  .dot.Home{background:var(--home)}
+  .dish .d-body{flex:1; min-width:0}
+  .dish .d-name{font-weight:620; font-size:15px}
+  .dish .d-name .role{font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
+    color:var(--muted); margin-left:7px}
+  .dish .d-note{font-size:13px; color:var(--muted); margin-top:1px}
+  .meal.veto .card{opacity:.5}
+  .meal.veto .card .dish .d-name{text-decoration:line-through}
+  .meal-actions{display:flex; padding:11px 14px; border-top:1px solid var(--line); background:#fdfcfa}
+  .notme{margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; transition:.12s;
+    display:flex; align-items:center; gap:6px}
+  .notme:active{transform:scale(.96)}
+  .meal.veto .notme{background:var(--accent); border-color:var(--accent); color:#fff}
+  .you{font-size:12px; color:var(--accent); font-weight:600; align-self:center}
+
+  /* ---------- Bottom bar ---------- */
+  .bottombar{position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:rgba(251,250,247,.92); backdrop-filter:blur(10px); border-top:1px solid var(--line);
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+  .bottombar .inner{max-width:680px; margin:0 auto; display:flex; align-items:center; gap:12px}
+  .bottombar .count{font-size:14px; color:var(--muted)}
+  .bottombar .count b{color:var(--ink)}
+  .btn{border:none; border-radius:14px; padding:13px 20px; font-size:15px; font-weight:650;
+    cursor:pointer; transition:.12s}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--accent); color:#fff; margin-left:auto}
+  .btn.block{width:100%; margin:0}
+
+  /* ---------- Thanks ---------- */
+  #thanks{display:none; place-items:center; min-height:100vh; text-align:center; padding:30px}
+  #thanks.active{display:grid}
+  #thanks .big{font-size:54px}
+  #thanks h2{margin:14px 0 6px; font-size:22px; font-weight:680}
+  #thanks p{margin:0 0 22px; color:var(--muted); max-width:340px}
+
+  .footnote{text-align:center; color:var(--muted); font-size:11px; padding:8px 0 26px}
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<section class="screen active" id="login">
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">🍽️</div>
+      <h1>MenuEngine</h1>
+      <p>Next week's menu is ready to review</p>
+    </div>
+    <p class="who">Who's checking?</p>
+    <div class="members" id="memberGrid"></div>
+    <div class="footnote">Tap your name. No password needed.</div>
+  </div>
+</section>
+
+<!-- ========== WEEK ========== -->
+<section class="screen" id="week">
+  <div class="topbar">
+    <div class="wrap">
+      <div class="row">
+        <button class="iconbtn" id="switchUser" title="Switch person">←</button>
+        <div class="greet">
+          <div class="hi" id="greetName">Hi</div>
+          <div class="sub">Reviewing · Week of Jun 8–14</div>
+        </div>
+      </div>
+      <div class="badges" id="badges"></div>
+      <div class="days" id="dayNav"></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="meals" id="meals"></div>
+  </div>
+  <div class="bottombar">
+    <div class="inner">
+      <div class="count"><b id="flagCount">0</b> meals flagged</div>
+      <button class="btn primary" id="sendBtn">Send my feedback</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== THANKS ========== -->
+<section class="screen" id="thanks">
+  <div>
+    <div class="big">🌿</div>
+    <h2>Thanks, <span id="thanksName">friend</span>!</h2>
+    <p id="thanksMsg">Your picks are in. The admin will review everyone's feedback and finalize the week.</p>
+    <button class="btn primary block" id="backBtn">Back to my week</button>
+  </div>
+</section>
+
+<script>
+/* ============================ Data (prototype) ============================ */
+const MEMBERS = [
+  {code:"GGM", name:"Great Grandma", av:"👵", factor:0.6, badges:["Soft food","Mild"]},
+  {code:"D",   name:"Dad",           av:"🧔", factor:1.0, badges:["No beef","Spicy OK 🌶️","Low sugar"]},
+  {code:"M",   name:"Mom",           av:"👩", factor:0.9, badges:["No beef","No raw fish","Comfort"]},
+  {code:"N1",  name:"Eldest Son",    av:"🧑", factor:1.5, badges:["No fish","High protein","More fiber"]},
+  {code:"N2",  name:"Second Son",    av:"👨", factor:1.4, badges:["High protein"]},
+  {code:"N3",  name:"Third Son",     av:"👨", factor:1.5, badges:["High protein"]},
+  {code:"N4",  name:"Fourth Son",    av:"👨", factor:1.5, badges:["High protein"]},
+  {code:"N5",  name:"Note",          av:"🩰", factor:1.0, badges:["High protein","Ballet"]},
+  {code:"N6",  name:"Neon",          av:"👧", factor:0.7, badges:["Kid","Mild"]},
+  {code:"N7",  name:"Neo",           av:"🧒", factor:0.4, badges:["Toddler","Soft"]},
+  {code:"L",   name:"Lookaew",       av:"👩‍🦰", factor:0.9, badges:[]},
+];
+
+const MEAL_WEIGHT = {breakfast:0.8, lunch:0.9, dinner:1.0};
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+// 7 days, each with breakfast/lunch/dinner -> dishes {name, cuisine, role, note}
+const WEEK = [
+  { date:"2026-06-08",
+    breakfast:[{n:"Chicken congee",c:"Chinese",r:"soft",note:"Gentle & warm to start"},{n:"Boiled eggs",c:"Home",r:"protein"},{n:"Papaya",c:"Home",r:"fruit"}],
+    lunch:[{n:"Khao Man Gai",c:"Thai",r:"main",note:"Poached chicken & rice"},{n:"Cucumber",c:"Home",r:"veg"}],
+    dinner:[{n:"Pad Krapow Gai",c:"Thai",r:"main",note:"Chili on the side"},{n:"Tom Kha Gai",c:"Thai",r:"soft"},{n:"Som Tum",c:"Thai",r:"veg"}] },
+  { date:"2026-06-09",
+    breakfast:[{n:"Soft-boiled eggs",c:"Home",r:"protein"},{n:"Multigrain toast",c:"American",r:"base"},{n:"Soy milk",c:"Home",r:"drink"}],
+    lunch:[{n:"Wonton Noodle Soup",c:"Chinese",r:"main",note:"Light & soft"}],
+    dinner:[{n:"Chicken Teriyaki",c:"Japanese",r:"main",note:"Low-sugar glaze"},{n:"Yakitori",c:"Japanese",r:"protein"},{n:"Japanese Curry (mild)",c:"Japanese",r:"soft"},{n:"Miso Soup",c:"Japanese",r:"soup"}] },
+  { date:"2026-06-10",
+    breakfast:[{n:"Century-egg congee",c:"Chinese",r:"soft"},{n:"Youtiao",c:"Chinese",r:"base"}],
+    lunch:[{n:"Yangzhou Fried Rice",c:"Chinese",r:"main",note:"With shrimp & chicken"}],
+    dinner:[{n:"Kung Pao Chicken",c:"Chinese",r:"main",note:"Chili on the side"},{n:"Mapo Tofu",c:"Chinese",r:"protein"},{n:"Garlic Greens",c:"Chinese",r:"veg"}] },
+  { date:"2026-06-11",
+    breakfast:[{n:"Oatmeal & fruit",c:"American",r:"soft"},{n:"Scrambled eggs",c:"Home",r:"protein"}],
+    lunch:[{n:"Cobb Salad",c:"American",r:"main",note:"Protein + fiber"}],
+    dinner:[{n:"Roast Chicken",c:"American",r:"main"},{n:"Mac & Cheese",c:"American",r:"soft"},{n:"Grilled Cheese & Tomato Soup",c:"American",r:"soft"}] },
+  { date:"2026-06-12",
+    breakfast:[{n:"Jok (rice porridge)",c:"Thai",r:"soft",note:"With minced pork"}],
+    lunch:[{n:"Pad See Ew",c:"Thai",r:"main"}],
+    dinner:[{n:"Massaman Chicken",c:"Thai",r:"main",note:"Tender & mild"},{n:"Tom Yum Goong",c:"Thai",r:"soup",note:"Shrimp — heat adjustable"},{n:"Chicken Satay",c:"Thai",r:"protein"}] },
+  { date:"2026-06-13",
+    breakfast:[{n:"Pancakes",c:"American",r:"base"},{n:"Eggs & fruit",c:"Home",r:"protein"}],
+    lunch:[{n:"Udon Noodle Soup",c:"Japanese",r:"soft"}],
+    dinner:[{n:"Tonkatsu / Katsudon",c:"Japanese",r:"main",note:"Katsudon is the soft option"},{n:"Miso Soup",c:"Japanese",r:"soup"},{n:"Seaweed salad",c:"Japanese",r:"veg"}] },
+  { date:"2026-06-14",
+    breakfast:[{n:"Dim sum brunch",c:"Chinese",r:"main",note:"Congee + dumplings"}],
+    lunch:[{n:"Fruit & cook's share",c:"Home",r:"soft",note:"Light — feast tonight"}],
+    dinner:[{n:"Char Siu",c:"Chinese",r:"main"},{n:"Sweet & Sour Pork",c:"Chinese",r:"main",note:"Low-sugar"},{n:"Pork Dumplings + Gyoza",c:"Chinese",r:"protein"},{n:"Yangzhou Fried Rice",c:"Chinese",r:"base"},{n:"Fresh fruit",c:"Home",r:"dessert"}] },
+];
+
+const MEAL_ICON = {breakfast:"☀️", lunch:"🍵", dinner:"🌙"};
+
+/* ============================ State ============================ */
+let me = null;          // current member
+let dayIdx = 1;         // default to Monday
+let vetoes = {};        // { "date|meal": true }
+
+function vkey(date, meal){ return date + "|" + meal; }
+function roundHalfUp(x){ return Math.ceil(x*2)/2; }
+function householdFactor(){ return MEMBERS.reduce((s,m)=>s+m.factor,0); }
+
+/* ============================ Login ============================ */
+function renderLogin(){
+  const g = document.getElementById("memberGrid");
+  g.innerHTML = "";
+  MEMBERS.forEach(m=>{
+    const el = document.createElement("button");
+    el.className = "mcard";
+    el.innerHTML = `<div class="av">${m.av}</div><div class="nm">${m.name}</div>
+      <div class="cd">${m.code}</div>`;
+    el.addEventListener("click", ()=>enter(m));
+    g.appendChild(el);
+  });
+}
+
+function enter(m){
+  me = m;
+  vetoes = loadVetoes(m.code);
+  document.getElementById("greetName").textContent = "Hi " + m.name.split(" ")[0];
+  const b = document.getElementById("badges");
+  b.innerHTML = "";
+  (m.badges.length ? m.badges : ["No restrictions"]).forEach(t=>{
+    const span = document.createElement("span");
+    const warn = /no |low |soft|mild/i.test(t);
+    span.className = "badge" + (warn ? " warn" : "");
+    span.textContent = t;
+    b.appendChild(span);
+  });
+  renderDays(); renderDay(); updateFlag();
+  show("week");
+}
+
+/* ============================ Day nav ============================ */
+function renderDays(){
+  const nav = document.getElementById("dayNav");
+  nav.innerHTML = "";
+  WEEK.forEach((d,i)=>{
+    const dt = new Date(d.date+"T00:00:00");
+    const el = document.createElement("button");
+    el.className = "day";
+    el.setAttribute("aria-selected", String(i===dayIdx));
+    el.innerHTML = `<div class="dow">${DOW[dt.getDay()]}</div><div class="dnum">${dt.getDate()}</div>`;
+    el.addEventListener("click", ()=>{ dayIdx=i; renderDays(); renderDay(); });
+    nav.appendChild(el);
+  });
+}
+
+/* ============================ Meals ============================ */
+function renderDay(){
+  const day = WEEK[dayIdx];
+  const host = document.getElementById("meals");
+  host.innerHTML = "";
+  ["breakfast","lunch","dinner"].forEach(meal=>{
+    const dishes = day[meal] || [];
+    if(!dishes.length) return;
+    const vetoed = !!vetoes[vkey(day.date, meal)];
+
+    // cook quantity: household demand for this meal, minus me if I veto
+    let raw = householdFactor() * MEAL_WEIGHT[meal];
+    if(vetoed) raw -= me.factor * MEAL_WEIGHT[meal];
+    const cook = roundHalfUp(raw);
+
+    const sec = document.createElement("div");
+    sec.className = "meal" + (vetoed ? " veto" : "");
+
+    let dishHtml = dishes.map(d=>{
+      const note = personalNote(d, meal);
+      return `<div class="dish">
+        <span class="dot ${d.c}"></span>
+        <div class="d-body">
+          <div class="d-name">${esc(d.n)}<span class="role">${esc(d.r||"")}</span></div>
+          ${note ? `<div class="d-note">${esc(note)}</div>` : ""}
+        </div></div>`;
+    }).join("");
+
+    sec.innerHTML = `
+      <div class="meal-head">
+        <span class="ico">${MEAL_ICON[meal]}</span>
+        <span class="lbl">${meal}</span>
+        <span class="qty">Cook <b>~${cook}</b> servings</span>
+      </div>
+      <div class="card">
+        ${dishHtml}
+        <div class="meal-actions">
+          ${vetoed ? `<span class="you">You flagged this</span>` : ``}
+          <button class="notme" data-key="${vkey(day.date,meal)}">
+            ${vetoed ? "✓ Flagged" : "👎 Not for me"}
+          </button>
+        </div>
+      </div>`;
+    host.appendChild(sec);
+  });
+
+  host.querySelectorAll(".notme").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const k = btn.dataset.key;
+      if(vetoes[k]) delete vetoes[k]; else vetoes[k]=true;
+      saveVetoes(me.code, vetoes);
+      renderDay(); updateFlag();
+    });
+  });
+}
+
+// Light personalization: surface the note most relevant to the current member.
+function personalNote(d, meal){
+  if(!me) return d.note || "";
+  const t = (d.n + " " + (d.note||"")).toLowerCase();
+  if(me.code==="D" && /chili|spicy|kung pao|krapow|tom yum/.test(t)) return "You can have it hot 🌶️ — " + (d.note||"chili on the side");
+  if((me.code==="GGM"||me.code==="N7") && (d.r==="soft"||/congee|porridge|soup|tofu|udon|mac/.test(t))) return "Soft & easy for you" + (d.note?` · ${d.note}`:"");
+  if(/protein|high protein/.test(me.badges.join(" ").toLowerCase()) && (d.r==="protein"||d.r==="main")) return (d.note?d.note+" · ":"") + "good protein for training";
+  return d.note || "";
+}
+
+function updateFlag(){
+  document.getElementById("flagCount").textContent = Object.keys(vetoes).length;
+}
+
+/* ============================ Persistence (prototype) ============================ */
+function loadVetoes(code){
+  try{ return JSON.parse(localStorage.getItem("menuengine.votes."+code)) || {}; }
+  catch(e){ return {}; }
+}
+function saveVetoes(code, v){ localStorage.setItem("menuengine.votes."+code, JSON.stringify(v)); }
+
+/* ============================ Nav ============================ */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+document.getElementById("switchUser").addEventListener("click", ()=>show("login"));
+document.getElementById("sendBtn").addEventListener("click", ()=>{
+  document.getElementById("thanksName").textContent = me.name.split(" ")[0];
+  const n = Object.keys(vetoes).length;
+  document.getElementById("thanksMsg").textContent = n
+    ? `You flagged ${n} meal${n>1?"s":""}. The admin will review everyone's feedback and finalize the week.`
+    : `Looks like everything works for you! The admin will finalize the week soon.`;
+  show("thanks");
+});
+document.getElementById("backBtn").addEventListener("click", ()=>show("week"));
+
+function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+renderLogin();
+</script>
+</body>
+</html>
