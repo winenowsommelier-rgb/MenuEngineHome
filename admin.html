@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>MenuEngine · Admin</title>
+<style>
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --ink:#181818; --muted:#8A8578;
+    --line:#EDE8E0; --accent:#E8623D; --accent-soft:#FBE9E2; --ok:#3AA76D;
+    --flag1:#FCEFD8; --flag2:#F8D9B0; --flag3:#F2B58A;
+    --thai:#E35D6A; --chinese:#D99A00; --japanese:#5B8DEF; --american:#3AA76D; --home:#9A8F7D;
+    --shadow:0 1px 2px rgba(40,30,20,.04), 0 8px 24px rgba(40,30,20,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:96px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(251,250,247,.9);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex;align-items:center;gap:12px;padding:14px 0}
+  .topbar h1{font-size:18px;font-weight:700;letter-spacing:-.3px;margin:0;flex:1}
+  .pill{font-size:12px;font-weight:700;border-radius:999px;padding:4px 11px}
+  .pill.pub{background:var(--accent-soft);color:var(--accent)}
+  .pill.lock{background:#e7f4ec;color:var(--ok)}
+  .ghostbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;
+    padding:7px 11px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+
+  .summary{display:flex;gap:10px;padding:14px 0 6px;flex-wrap:wrap}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 14px;flex:1;min-width:120px;box-shadow:var(--shadow)}
+  .stat .n{font-size:22px;font-weight:720;letter-spacing:-.5px}
+  .stat .l{font-size:12px;color:var(--muted)}
+
+  .day{margin:18px 0 6px}
+  .day .dlabel{font-size:13px;font-weight:700;letter-spacing:.4px;color:var(--ink);margin:0 2px 8px}
+  .meal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);margin:10px 0;overflow:hidden}
+  .meal-head{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .meal-head .ico{font-size:14px}
+  .meal-head .lbl{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .meal-head .qty{font-size:12px;font-weight:600;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+  .meal-head .qty b{color:var(--accent)}
+  .flagbadge{margin-left:auto;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+  .flagbadge.f1{background:var(--flag1)} .flagbadge.f2{background:var(--flag2)} .flagbadge.f3{background:var(--flag3);color:#7a3b16}
+  .dish{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+  .dish:first-child{border-top:none}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .dot.Thai{background:var(--thai)}.dot.Chinese{background:var(--chinese)}.dot.Japanese{background:var(--japanese)}.dot.American{background:var(--american)}.dot.Home{background:var(--home)}
+  .dish .dn{font-weight:600;font-size:15px;flex:1}
+  .dish .role{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  /* edit mode */
+  .dish input.din{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;font-family:inherit}
+  .dish select.dsel{border:1px solid var(--line);border-radius:8px;padding:7px;font-size:12px;background:#fff}
+  .dish .rm{border:none;background:none;color:#c54;font-size:17px;cursor:pointer;padding:2px 6px}
+  .addrow{padding:9px 14px;border-top:1px dashed var(--line)}
+  .addbtn{border:1px dashed var(--line);background:transparent;color:var(--accent);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+  .voters{padding:0 14px 12px;display:none}
+  .voters.show{display:block}
+  .voter{font-size:13px;color:var(--muted);padding:3px 0;border-top:1px dotted var(--line)}
+  .voter b{color:var(--ink);font-weight:600}
+
+  .bottombar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(251,250,247,.94);
+    backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .bottombar .inner{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center}
+  .btn{border:none;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:650;cursor:pointer;transition:.12s}
+  .btn:active{transform:scale(.98)}
+  .btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+  .btn.primary{background:var(--accent);color:#fff;margin-left:auto}
+  .btn.lock{background:var(--ink);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* gate */
+  .gate{position:fixed;inset:0;background:var(--bg);z-index:50;display:grid;place-items:center;padding:24px}
+  .gate .box{max-width:380px;text-align:center}
+  .gate h2{font-size:20px;margin:10px 0 4px}
+  .gate p{color:var(--muted);font-size:14px;margin:0 0 16px}
+  .gate input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:15px;text-align:center}
+  .gate .btn{width:100%;margin-top:12px}
+  .state{text-align:center;color:var(--muted);padding:48px 20px}
+  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="row">
+      <h1>🍽️ Admin</h1>
+      <span class="pill pub" id="statusPill">—</span>
+      <button class="ghostbtn" id="resetKey">Key</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+  <div id="board"><div class="state" id="state">Loading week…</div></div>
+</div>
+
+<div class="bottombar">
+  <div class="inner">
+    <button class="btn ghost" id="editBtn">✏️ Edit dishes</button>
+    <button class="btn primary" id="saveBtn" style="display:none">Save changes</button>
+    <button class="btn lock" id="lockBtn">🔒 Lock week</button>
+  </div>
+</div>
+
+<div class="gate" id="gate">
+  <div class="box">
+    <div style="font-size:34px">🔑</div>
+    <h2>Admin access</h2>
+    <p>Enter the admin key to review and finalize the week.</p>
+    <input type="password" id="keyInput" placeholder="Admin key" />
+    <button class="btn primary" id="keyBtn">Enter</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="config.local.js" onerror="void 0"></script>
+<script src="api.js"></script>
+<script>
+const WEEK_START = "2026-06-08";
+const DOW = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MEAL_WEIGHT = {breakfast:0.8, lunch:0.9, dinner:1.0};
+const MEAL_ICON = {breakfast:"☀️", lunch:"🍵", dinner:"🌙"};
+const CUISINES = ["Thai","Chinese","Japanese","American","Home"];
+const KEY_LS = "menuengine.adminKey";
+
+let MEMBERS = [], MEALS = [], VOTES = [], STATUS = "published";
+let editing = false;
+
+function slug(){ return (window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug) || ""; }
+function roundHalfUp(x){ return Math.ceil(x*2)/2; }
+function isWeekend(date){ const g=new Date(date+"T00:00:00").getDay(); return g===0||g===6; }
+function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+/* ---- attendance + portions ---- */
+function present(meal_type, date){
+  return MEMBERS.filter(function(m){
+    if(meal_type==="lunch" && !isWeekend(date)) return (m.lunch_weekday||"home")!=="away";
+    return true;
+  });
+}
+function cookQty(meal_type, date){
+  // who's present, minus members who flagged this exact meal
+  const flaggers = new Set(VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type; })
+    .map(function(v){ return v.member_code; }));
+  const sum = present(meal_type, date)
+    .filter(function(m){ return !flaggers.has(m.code); })
+    .reduce(function(s,m){ return s + (Number(m.portion_factor)||1); }, 0);
+  return roundHalfUp(sum * (MEAL_WEIGHT[meal_type]||1));
+}
+function votesFor(date, meal_type){
+  return VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type; });
+}
+function memberName(code){ const m = MEMBERS.find(function(x){return x.code===code;}); return m?m.name:code; }
+
+/* ---- load ---- */
+async function load(){
+  const st = document.getElementById("state");
+  if(!(window.MenuEngineAPI && MenuEngineAPI.hasApi() && slug())){
+    st.textContent = "No API configured."; return;
+  }
+  try{
+    const [w, vt] = await Promise.all([
+      MenuEngineAPI.getWeek(slug(), WEEK_START),
+      MenuEngineAPI.getVotes(slug(), WEEK_START)
+    ]);
+    if(!w.ok){ st.textContent = "Couldn't load the week."; return; }
+    MEMBERS = w.members || [];
+    MEALS = w.meals || [];
+    VOTES = (vt && vt.ok) ? (vt.votes || []) : [];
+    STATUS = (MEALS[0] && MEALS[0].status) || "published";
+    render();
+  }catch(e){ st.textContent = "Error: " + e; }
+}
+
+/* ---- group meals by date ---- */
+function byDate(){
+  const map = {}, order = [];
+  MEALS.forEach(function(m){
+    if(!map[m.date]){ map[m.date] = {breakfast:null,lunch:null,dinner:null}; order.push(m.date); }
+    map[m.date][m.meal_type] = m;
+  });
+  order.sort();
+  return {map:map, order:order};
+}
+
+function fmtDay(date){
+  const d = new Date(date+"T00:00:00");
+  return DOW[d.getDay()] + " · " + MON[d.getMonth()] + " " + d.getDate();
+}
+
+function render(){
+  // status pill
+  const pill = document.getElementById("statusPill");
+  pill.textContent = STATUS==="locked" ? "Locked" : "Published";
+  pill.className = "pill " + (STATUS==="locked" ? "lock" : "pub");
+
+  // summary
+  const totalFlags = VOTES.length;
+  const voters = new Set(VOTES.map(function(v){return v.member_code;})).size;
+  // most flagged meal
+  const counts = {};
+  VOTES.forEach(function(v){ const k=v.date+"|"+v.meal_type; counts[k]=(counts[k]||0)+1; });
+  let topK=null, topN=0; Object.keys(counts).forEach(function(k){ if(counts[k]>topN){topN=counts[k];topK=k;} });
+  let topLabel = "—";
+  if(topK){ const p=topK.split("|"); topLabel = MON[new Date(p[0]+"T00:00:00").getMonth()]+" "+new Date(p[0]+"T00:00:00").getDate()+" "+p[1]; }
+  document.getElementById("summary").innerHTML =
+    `<div class="stat"><div class="n">${totalFlags}</div><div class="l">flags this week</div></div>
+     <div class="stat"><div class="n">${voters}/${MEMBERS.length}</div><div class="l">members voted</div></div>
+     <div class="stat"><div class="n">${topN||0}</div><div class="l">most flagged · ${esc(topLabel)}</div></div>`;
+
+  const g = byDate();
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  g.order.forEach(function(date){
+    const day = document.createElement("div");
+    day.className = "day";
+    day.innerHTML = `<div class="dlabel">${fmtDay(date)}</div>`;
+    ["breakfast","lunch","dinner"].forEach(function(mt){
+      const meal = g.map[date][mt];
+      if(!meal) return;
+      day.appendChild(mealCard(date, mt, meal));
+    });
+    board.appendChild(day);
+  });
+}
+
+function mealCard(date, mt, meal){
+  const el = document.createElement("div");
+  el.className = "meal";
+  const vs = votesFor(date, mt);
+  const fclass = vs.length>=3 ? "f3" : vs.length===2 ? "f2" : vs.length===1 ? "f1" : "";
+  const qty = cookQty(mt, date);
+  const partial = (mt==="lunch" && !isWeekend(date));
+
+  let dishHtml = (meal.dishes||[]).map(function(d, i){
+    if(editing){
+      const opts = CUISINES.map(c=>`<option ${c===d.cuisine?"selected":""}>${c}</option>`).join("");
+      return `<div class="dish" data-i="${i}">
+        <input class="din" value="${esc(d.dish_name)}" />
+        <select class="dsel">${opts}</select>
+        <button class="rm" title="Remove">✕</button></div>`;
+    }
+    return `<div class="dish">
+      <span class="dot ${d.cuisine||'Home'}"></span>
+      <span class="dn">${esc(d.dish_name)}</span>
+      <span class="role">${esc(d.role||"")}</span></div>`;
+  }).join("");
+
+  const voterHtml = vs.map(function(v){
+    return `<div class="voter"><b>${esc(memberName(v.member_code))}</b>${v.reason?" — "+esc(v.reason):""}</div>`;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="meal-head">
+      <span class="ico">${MEAL_ICON[mt]}</span>
+      <span class="lbl">${mt}${partial?" · "+present(mt,date).length+" home":""}</span>
+      <span class="qty">Cook <b>~${qty}</b></span>
+      <span class="flagbadge ${fclass}" data-toggle="1">🚩 ${vs.length}</span>
+    </div>
+    ${dishHtml}
+    ${editing ? `<div class="addrow"><button class="addbtn">+ Add dish</button></div>` : ``}
+    <div class="voters">${voterHtml || '<div class="voter">No flags.</div>'}</div>`;
+
+  el.dataset.date = date; el.dataset.mt = mt; el.dataset.mealId = meal.id;
+
+  // toggle voters
+  el.querySelector(".flagbadge").addEventListener("click", function(){
+    el.querySelector(".voters").classList.toggle("show");
+  });
+  // edit handlers
+  if(editing){
+    el.querySelectorAll(".rm").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        const i = +btn.closest(".dish").dataset.i;
+        meal.dishes.splice(i,1); render();
+      });
+    });
+    el.querySelectorAll(".dish").forEach(function(row){
+      const i = +row.dataset.i;
+      const inp = row.querySelector(".din"), sel = row.querySelector(".dsel");
+      if(inp) inp.addEventListener("input", function(){ meal.dishes[i].dish_name = inp.value; });
+      if(sel) sel.addEventListener("change", function(){ meal.dishes[i].cuisine = sel.value; });
+    });
+    const add = el.querySelector(".addbtn");
+    if(add) add.addEventListener("click", function(){
+      meal.dishes.push({dish_name:"New dish", cuisine:"Home", role:"", notes:""}); render();
+    });
+  }
+  return el;
+}
+
+/* ---- build publishWeek payload from current MEALS ---- */
+function buildMealsPayload(lock){
+  const g = byDate();
+  const meals = [];
+  let pos = 0;
+  g.order.forEach(function(date){
+    ["breakfast","lunch","dinner"].forEach(function(mt){
+      const m = g.map[date][mt];
+      if(!m) return;
+      const qty = lock ? cookQty(mt, date) : null;
+      meals.push({
+        date: date, meal_type: mt, position: pos++,
+        dishes: (m.dishes||[]).map(function(d, di){
+          return { dish_name:d.dish_name, cuisine:d.cuisine||"Home", role:d.role||"",
+                   notes:d.notes||"", planned_servings: lock ? qty : (d.planned_servings||""), position:di };
+        })
+      });
+    });
+  });
+  return meals;
+}
+
+async function publish(lock){
+  const meals = buildMealsPayload(lock);
+  const res = await MenuEngineAPI.publishWeek({
+    slug: slug(), week_start: WEEK_START,
+    status: lock ? "locked" : "published", meals: meals
+  });
+  return res;
+}
+
+/* ---- actions ---- */
+document.getElementById("editBtn").addEventListener("click", function(){
+  editing = !editing;
+  document.getElementById("editBtn").textContent = editing ? "✓ Done editing" : "✏️ Edit dishes";
+  document.getElementById("saveBtn").style.display = editing ? "inline-block" : "none";
+  render();
+});
+document.getElementById("saveBtn").addEventListener("click", async function(){
+  const b = this; b.disabled=true; b.textContent="Saving…";
+  try{ const r = await publish(false); toast(r.ok?"Saved ✓":"Save failed"); }
+  catch(e){ toast("Error"); }
+  b.disabled=false; b.textContent="Save changes";
+});
+document.getElementById("lockBtn").addEventListener("click", async function(){
+  if(!confirm("Lock the week? This sets the cook quantities from current votes and marks the menu final.")) return;
+  const b = this; b.disabled=true; b.textContent="Locking…";
+  try{
+    const r = await publish(true);
+    if(r.ok){ STATUS="locked"; toast("Week locked 🔒"); await load(); }
+    else toast("Lock failed");
+  }catch(e){ toast("Error"); }
+  b.disabled=false; b.textContent="🔒 Lock week";
+});
+
+/* ---- toast ---- */
+let tt; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),1900); }
+
+/* ---- admin key gate ---- */
+function applyKey(k){
+  if(window.MENUENGINE_CONFIG) MENUENGINE_CONFIG.writeToken = k;
+}
+function openGate(){ document.getElementById("gate").style.display="grid"; }
+function closeGate(){ document.getElementById("gate").style.display="none"; }
+document.getElementById("keyBtn").addEventListener("click", function(){
+  const k = document.getElementById("keyInput").value.trim();
+  if(!k) return;
+  localStorage.setItem(KEY_LS, k); applyKey(k); closeGate(); load();
+});
+document.getElementById("keyInput").addEventListener("keydown", function(e){ if(e.key==="Enter") document.getElementById("keyBtn").click(); });
+document.getElementById("resetKey").addEventListener("click", function(){
+  localStorage.removeItem(KEY_LS); openGate();
+});
+
+/* ---- init ---- */
+(function(){
+  const saved = localStorage.getItem(KEY_LS);
+  if(saved){ applyKey(saved); closeGate(); load(); }
+  else openGate();
+})();
+</script>
+</body>
+</html>

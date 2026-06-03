@@ -81,10 +81,15 @@ Reads are gated by unguessable share slugs; writes by a shared token. See
 
 ## Next ideas
 
-- [ ] Redeploy the updated `Code.gs` (new version, SAME deployment → same URL),
-  then save the 11 members into the sheet.
-- [ ] "Log in by code" picker: choose your member code on open; later each
-  member builds their own food profile + monthly menu.
+- [x] **v2 backend live** — Meals/MealDishes/Votes/Ingredients; members stored;
+  week published; member voting (`app.html`) wired and verified end to end.
+- [x] **Admin console** (`admin.html`) — flag heatmap (who/why), edit/swap
+  dishes, and Lock week (computes cook portions from attendance − votes).
+  Admin-key gated (the write token, kept in the browser only).
+- [ ] Shopping-list engine: ingredients per recipe → aisle-grouped weekly list.
+- [ ] Cook day view: today's meals, exact quantities, recipe steps.
+- [ ] "Log in by code" already in `app.html`; later let each member edit their
+  own food profile + monthly preferences.
 - [ ] Wire `index.html` / `profile.html` "Save" buttons to the API directly
   (currently copy-paste; needs the write token, so route via a tiny serverless
   proxy or a prompt).
