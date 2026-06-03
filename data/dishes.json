@@ -12,6 +12,65 @@
         "spicy",
         "quick",
         "protein"
+      ],
+      "nutrition": {
+        "kcal": 520,
+        "protein_g": 34,
+        "fiber_g": 3,
+        "carbs_g": 55,
+        "fat_g": 18
+      },
+      "steps": [
+        "Mince garlic & chili; pound lightly.",
+        "Stir-fry garlic-chili in hot oil until fragrant.",
+        "Add minced chicken; fry on high until cooked.",
+        "Season with soy, oyster & a little fish sauce.",
+        "Toss in holy basil off the heat.",
+        "Serve over rice with a crispy fried egg."
+      ],
+      "items": [
+        {
+          "item": "Minced chicken",
+          "qty": 150,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Holy basil",
+          "qty": 15,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Garlic",
+          "qty": 3,
+          "unit": "clove",
+          "aisle": "produce"
+        },
+        {
+          "item": "Thai chili",
+          "qty": 2,
+          "unit": "pc",
+          "aisle": "produce"
+        },
+        {
+          "item": "Jasmine rice",
+          "qty": 1,
+          "unit": "cup",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Egg",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "dairy & egg"
+        },
+        {
+          "item": "Soy & oyster sauce",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -25,6 +84,58 @@
         "soft",
         "mild",
         "coconut"
+      ],
+      "nutrition": {
+        "kcal": 320,
+        "protein_g": 22,
+        "fiber_g": 2,
+        "carbs_g": 12,
+        "fat_g": 21
+      },
+      "steps": [
+        "Simmer coconut milk with galangal, lemongrass & lime leaves.",
+        "Add sliced chicken; poach gently.",
+        "Add mushrooms; cook till tender.",
+        "Season with lime juice & a little fish sauce.",
+        "Finish with cilantro."
+      ],
+      "items": [
+        {
+          "item": "Chicken thigh",
+          "qty": 120,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Coconut milk",
+          "qty": 150,
+          "unit": "ml",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Galangal",
+          "qty": 20,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Lemongrass",
+          "qty": 1,
+          "unit": "stalk",
+          "aisle": "produce"
+        },
+        {
+          "item": "Mushroom",
+          "qty": 50,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Lime",
+          "qty": 0.5,
+          "unit": "pc",
+          "aisle": "produce"
+        }
       ]
     },
     {
@@ -38,6 +149,52 @@
         "shrimp",
         "spicy",
         "sour"
+      ],
+      "nutrition": {
+        "kcal": 180,
+        "protein_g": 18,
+        "fiber_g": 2,
+        "carbs_g": 10,
+        "fat_g": 7
+      },
+      "steps": [
+        "Boil stock with lemongrass, galangal & lime leaves.",
+        "Add mushrooms.",
+        "Add shrimp; cook till pink.",
+        "Season with lime, chili & fish sauce.",
+        "Finish with cilantro."
+      ],
+      "items": [
+        {
+          "item": "Shrimp",
+          "qty": 120,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Lemongrass",
+          "qty": 1,
+          "unit": "stalk",
+          "aisle": "produce"
+        },
+        {
+          "item": "Galangal",
+          "qty": 15,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Mushroom",
+          "qty": 50,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Lime",
+          "qty": 0.5,
+          "unit": "pc",
+          "aisle": "produce"
+        }
       ]
     },
     {
@@ -51,6 +208,52 @@
         "fiber",
         "spicy",
         "fresh"
+      ],
+      "nutrition": {
+        "kcal": 140,
+        "protein_g": 4,
+        "fiber_g": 5,
+        "carbs_g": 22,
+        "fat_g": 5
+      },
+      "steps": [
+        "Pound garlic & chili in a mortar.",
+        "Add long beans & tomato; bruise lightly.",
+        "Add shredded green papaya.",
+        "Season with lime, palm sugar & fish sauce; toss.",
+        "Top with peanuts."
+      ],
+      "items": [
+        {
+          "item": "Green papaya",
+          "qty": 120,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Tomato",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "produce"
+        },
+        {
+          "item": "Long beans",
+          "qty": 30,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Peanuts",
+          "qty": 15,
+          "unit": "g",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Lime",
+          "qty": 0.5,
+          "unit": "pc",
+          "aisle": "produce"
+        }
       ]
     },
     {
@@ -77,6 +280,52 @@
         "soft",
         "mild",
         "comfort"
+      ],
+      "nutrition": {
+        "kcal": 520,
+        "protein_g": 28,
+        "fiber_g": 4,
+        "carbs_g": 40,
+        "fat_g": 27
+      },
+      "steps": [
+        "Fry massaman paste in coconut cream until fragrant.",
+        "Add chicken; brown.",
+        "Add coconut milk, potato, onion & peanuts.",
+        "Simmer until tender.",
+        "Season with tamarind, palm sugar & fish sauce."
+      ],
+      "items": [
+        {
+          "item": "Chicken thigh",
+          "qty": 150,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Massaman paste",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Coconut milk",
+          "qty": 150,
+          "unit": "ml",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Potato",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "produce"
+        },
+        {
+          "item": "Peanuts",
+          "qty": 15,
+          "unit": "g",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -210,6 +459,52 @@
         "spicy",
         "tofu",
         "protein"
+      ],
+      "nutrition": {
+        "kcal": 300,
+        "protein_g": 18,
+        "fiber_g": 3,
+        "carbs_g": 14,
+        "fat_g": 19
+      },
+      "steps": [
+        "Fry minced pork until browned.",
+        "Add doubanjiang & garlic; fry till red oil.",
+        "Add stock & cubed silken tofu; simmer gently.",
+        "Thicken with a little starch slurry.",
+        "Finish with Sichuan pepper & scallion."
+      ],
+      "items": [
+        {
+          "item": "Silken tofu",
+          "qty": 150,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Minced pork",
+          "qty": 40,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Doubanjiang",
+          "qty": 1,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Sichuan pepper",
+          "qty": 1,
+          "unit": "tsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Scallion",
+          "qty": 1,
+          "unit": "stalk",
+          "aisle": "produce"
+        }
       ]
     },
     {
@@ -222,6 +517,51 @@
         "crispy",
         "sweet",
         "kid"
+      ],
+      "nutrition": {
+        "kcal": 560,
+        "protein_g": 26,
+        "fiber_g": 2,
+        "carbs_g": 58,
+        "fat_g": 24
+      },
+      "steps": [
+        "Batter & fry pork until crisp.",
+        "Stir-fry pepper, onion & pineapple.",
+        "Add a reduced-sugar sweet-sour sauce.",
+        "Toss the pork through; serve."
+      ],
+      "items": [
+        {
+          "item": "Pork",
+          "qty": 150,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Pineapple",
+          "qty": 60,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Bell pepper",
+          "qty": 0.5,
+          "unit": "pc",
+          "aisle": "produce"
+        },
+        {
+          "item": "Cornstarch",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Vinegar",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -233,6 +573,52 @@
       "tags": [
         "rice",
         "protein"
+      ],
+      "nutrition": {
+        "kcal": 480,
+        "protein_g": 20,
+        "fiber_g": 2,
+        "carbs_g": 62,
+        "fat_g": 16
+      },
+      "steps": [
+        "Scramble egg; set aside.",
+        "Stir-fry shrimp & diced char siu.",
+        "Add cold rice; fry on high.",
+        "Add peas & egg; season with soy.",
+        "Finish with scallion."
+      ],
+      "items": [
+        {
+          "item": "Cooked rice",
+          "qty": 1.5,
+          "unit": "cup",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Shrimp",
+          "qty": 40,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Char siu",
+          "qty": 40,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Egg",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "dairy & egg"
+        },
+        {
+          "item": "Peas",
+          "qty": 30,
+          "unit": "g",
+          "aisle": "frozen"
+        }
       ]
     },
     {
@@ -245,6 +631,45 @@
         "pork",
         "protein",
         "grill"
+      ],
+      "nutrition": {
+        "kcal": 430,
+        "protein_g": 31,
+        "fiber_g": 0,
+        "carbs_g": 20,
+        "fat_g": 25
+      },
+      "steps": [
+        "Marinate pork in hoisin, honey, soy & five-spice (4h+).",
+        "Roast at 200°C, basting, until caramelized.",
+        "Rest & slice.",
+        "Serve with rice."
+      ],
+      "items": [
+        {
+          "item": "Pork shoulder",
+          "qty": 170,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Hoisin",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Honey",
+          "qty": 1,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Five-spice",
+          "qty": 1,
+          "unit": "tsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -377,6 +802,52 @@
         "protein",
         "rice",
         "mild"
+      ],
+      "nutrition": {
+        "kcal": 480,
+        "protein_g": 35,
+        "fiber_g": 1,
+        "carbs_g": 48,
+        "fat_g": 15
+      },
+      "steps": [
+        "Pan-sear chicken thigh skin-side down until golden.",
+        "Flip & cook through.",
+        "Add a low-sugar teriyaki glaze (soy, mirin, a little honey).",
+        "Reduce until glossy; slice.",
+        "Serve over rice."
+      ],
+      "items": [
+        {
+          "item": "Chicken thigh",
+          "qty": 160,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Soy sauce",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Mirin",
+          "qty": 1,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Honey",
+          "qty": 1,
+          "unit": "tsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Rice",
+          "qty": 1,
+          "unit": "cup",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -425,6 +896,52 @@
         "crispy",
         "pork",
         "protein"
+      ],
+      "nutrition": {
+        "kcal": 620,
+        "protein_g": 33,
+        "fiber_g": 3,
+        "carbs_g": 52,
+        "fat_g": 31
+      },
+      "steps": [
+        "Pound pork loin; season.",
+        "Coat in flour, egg, then panko.",
+        "Deep-fry until golden & cooked.",
+        "Rest, then slice.",
+        "Serve with cabbage & tonkatsu sauce."
+      ],
+      "items": [
+        {
+          "item": "Pork loin",
+          "qty": 160,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Panko",
+          "qty": 40,
+          "unit": "g",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Egg",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "dairy & egg"
+        },
+        {
+          "item": "Cabbage",
+          "qty": 80,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Tonkatsu sauce",
+          "qty": 2,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -554,6 +1071,45 @@
       "tags": [
         "protein",
         "comfort"
+      ],
+      "nutrition": {
+        "kcal": 440,
+        "protein_g": 40,
+        "fiber_g": 1,
+        "carbs_g": 2,
+        "fat_g": 29
+      },
+      "steps": [
+        "Pat chicken dry; rub with herbs, garlic, salt.",
+        "Stuff with lemon.",
+        "Roast at 200°C until juices run clear.",
+        "Rest 10 min before carving."
+      ],
+      "items": [
+        {
+          "item": "Whole chicken",
+          "qty": 250,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Herbs (thyme/rosemary)",
+          "qty": 5,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Garlic",
+          "qty": 2,
+          "unit": "clove",
+          "aisle": "produce"
+        },
+        {
+          "item": "Lemon",
+          "qty": 0.25,
+          "unit": "pc",
+          "aisle": "produce"
+        }
       ]
     },
     {
@@ -799,6 +1355,39 @@
         "veg",
         "fiber",
         "mild"
+      ],
+      "nutrition": {
+        "kcal": 110,
+        "protein_g": 5,
+        "fiber_g": 4,
+        "carbs_g": 9,
+        "fat_g": 7
+      },
+      "steps": [
+        "Blanch spinach; squeeze dry.",
+        "Toast & grind sesame seeds.",
+        "Mix with soy & a little sugar.",
+        "Toss spinach in the sesame dressing."
+      ],
+      "items": [
+        {
+          "item": "Spinach",
+          "qty": 100,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Sesame seeds",
+          "qty": 1,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Soy sauce",
+          "qty": 1,
+          "unit": "tsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -849,6 +1438,46 @@
         "protein",
         "mild",
         "steam"
+      ],
+      "nutrition": {
+        "kcal": 300,
+        "protein_g": 34,
+        "fiber_g": 1,
+        "carbs_g": 3,
+        "fat_g": 16
+      },
+      "steps": [
+        "Rub chicken with a little salt & wine.",
+        "Steam over high heat until just cooked.",
+        "Heat oil; pour over ginger & scallion.",
+        "Drizzle with light soy.",
+        "Slice and serve."
+      ],
+      "items": [
+        {
+          "item": "Chicken (bone-in)",
+          "qty": 180,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Ginger",
+          "qty": 20,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Scallion",
+          "qty": 2,
+          "unit": "stalk",
+          "aisle": "produce"
+        },
+        {
+          "item": "Light soy",
+          "qty": 1,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -886,6 +1515,45 @@
         "soft",
         "protein",
         "braise"
+      ],
+      "nutrition": {
+        "kcal": 360,
+        "protein_g": 33,
+        "fiber_g": 1,
+        "carbs_g": 10,
+        "fat_g": 20
+      },
+      "steps": [
+        "Brown chicken pieces.",
+        "Add soy, ginger, star anise, sugar & water.",
+        "Braise until tender & glossy.",
+        "Reduce sauce; serve."
+      ],
+      "items": [
+        {
+          "item": "Chicken pieces",
+          "qty": 180,
+          "unit": "g",
+          "aisle": "meat & seafood"
+        },
+        {
+          "item": "Soy sauce",
+          "qty": 3,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        },
+        {
+          "item": "Ginger",
+          "qty": 15,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Star anise",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "pantry"
+        }
       ]
     },
     {
@@ -935,6 +1603,45 @@
         "veg",
         "fiber",
         "color"
+      ],
+      "nutrition": {
+        "kcal": 150,
+        "protein_g": 5,
+        "fiber_g": 7,
+        "carbs_g": 20,
+        "fat_g": 7
+      },
+      "steps": [
+        "Cut carrot, broccoli & cauliflower.",
+        "Toss with olive oil & salt.",
+        "Roast at 200°C until caramelized.",
+        "Finish with lemon."
+      ],
+      "items": [
+        {
+          "item": "Carrot",
+          "qty": 1,
+          "unit": "pc",
+          "aisle": "produce"
+        },
+        {
+          "item": "Broccoli",
+          "qty": 80,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Cauliflower",
+          "qty": 80,
+          "unit": "g",
+          "aisle": "produce"
+        },
+        {
+          "item": "Olive oil",
+          "qty": 1,
+          "unit": "tbsp",
+          "aisle": "pantry"
+        }
       ]
     },
     {

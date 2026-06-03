@@ -155,6 +155,15 @@
   .sheet .desc{font-size:15px;line-height:1.55;margin:0 0 14px}
   .sheet .lbl2{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
   .sheet .ing{font-size:14px;color:var(--ink)}
+  .sheet .ing ul{margin:4px 0 0;padding-left:18px}
+  .sheet .ing li{margin:2px 0}
+  .sheet .nutri{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 4px}
+  .sheet .nutri .np{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:center;min-width:64px}
+  .sheet .nutri .np b{display:block;font-size:16px;letter-spacing:-.3px}
+  .sheet .nutri .np span{font-size:11px;color:var(--muted)}
+  .sheet .nutri .np.hi b{color:var(--ok)}
+  .sheet .steps{margin:6px 0 0;padding-left:20px;font-size:14px;line-height:1.55}
+  .sheet .steps li{margin:4px 0}
   .sheet .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
   .sheet .tg{font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted)}
   .sheet .media{display:flex;gap:10px;margin-top:18px}
@@ -225,7 +234,9 @@
       <h3 id="dishName"></h3>
       <div class="cz" id="dishCuisine"></div>
       <p class="desc" id="dishDesc"></p>
+      <div class="nutri" id="dishNutri"></div>
       <div id="dishIngWrap"><div class="lbl2">What's in it</div><div class="ing" id="dishIng"></div></div>
+      <div id="dishStepsWrap"><div class="lbl2">How it's made</div><ol class="steps" id="dishSteps"></ol></div>
       <div class="tags" id="dishTags"></div>
       <div class="media" id="dishMedia"></div>
     </div>
@@ -524,9 +535,32 @@ function openDishModal(name){
   document.getElementById("dishCuisine").textContent = d ? d.cuisine : "";
   document.getElementById("dishDesc").textContent = d ? d.desc
     : "No description yet — tap below to see photos or a video of this dish.";
+  // nutrition (per serving)
+  const nu = document.getElementById("dishNutri");
+  if(d && d.nutrition){
+    const n = d.nutrition;
+    nu.style.display = "flex";
+    nu.innerHTML =
+      `<div class="np"><b>${n.kcal}</b><span>kcal</span></div>
+       <div class="np hi"><b>${n.protein_g}g</b><span>protein</span></div>
+       <div class="np hi"><b>${n.fiber_g}g</b><span>fiber</span></div>
+       <div class="np"><b>${n.carbs_g}g</b><span>carbs</span></div>
+       <div class="np"><b>${n.fat_g}g</b><span>fat</span></div>`;
+  } else nu.style.display = "none";
+  // ingredients — structured list if available, else text
   const ingWrap = document.getElementById("dishIngWrap");
-  if(d && d.ingredients){ ingWrap.style.display="block"; document.getElementById("dishIng").textContent = d.ingredients; }
+  const ing = document.getElementById("dishIng");
+  if(d && Array.isArray(d.items) && d.items.length){
+    ingWrap.style.display="block";
+    ing.innerHTML = "<ul>" + d.items.map(it=>`<li>${esc((it.qty!=null?it.qty+" ":"")+(it.unit?it.unit+" ":"")+it.item)}</li>`).join("") + "</ul>";
+  } else if(d && d.ingredients){ ingWrap.style.display="block"; ing.textContent = d.ingredients; }
   else ingWrap.style.display="none";
+  // steps
+  const stWrap = document.getElementById("dishStepsWrap");
+  if(d && Array.isArray(d.steps) && d.steps.length){
+    stWrap.style.display="block";
+    document.getElementById("dishSteps").innerHTML = d.steps.map(s=>`<li>${esc(s)}</li>`).join("");
+  } else stWrap.style.display="none";
   const tg = document.getElementById("dishTags"); tg.innerHTML="";
   ((d && d.tags) || []).forEach(t=>{ const s=document.createElement("span"); s.className="tg"; s.textContent=t; tg.appendChild(s); });
   const hero = document.getElementById("dishHero");
