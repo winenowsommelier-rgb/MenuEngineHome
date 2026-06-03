@@ -86,6 +86,14 @@ Reads are gated by unguessable share slugs; writes by a shared token. See
 - [x] **Admin console** (`admin.html`) — flag heatmap (who/why), edit/swap
   dishes, and Lock week (computes cook portions from attendance − votes).
   Admin-key gated (the write token, kept in the browser only).
+- [x] **Dish library + detail popups** (`data/dishes.json`, 64 dishes) — tap any
+  dish in `app.html` for a plain-language explanation, ingredients, a photo, and
+  Watch-on-YouTube / See-photos links so every member understands the meal.
+- [x] **Menu design settings** (`settings.html`) — admin picks the design lens
+  per batch (Nutritionist / Doctor / Chef / Trainer / Thrifty / Family Comfort)
+  as a single choice or weighted blend; stored in the `Settings` tab and used
+  when generating the next batch.
+- [ ] Use the saved design lens + dish library when generating the next month.
 - [ ] Shopping-list engine: ingredients per recipe → aisle-grouped weekly list.
 - [ ] Cook day view: today's meals, exact quantities, recipe steps.
 - [ ] "Log in by code" already in `app.html`; later let each member edit their

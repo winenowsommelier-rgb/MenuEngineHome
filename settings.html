@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>MenuEngine · Menu Design Settings</title>
+<style>
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --ink:#181818; --muted:#8A8578;
+    --line:#EDE8E0; --accent:#E8623D; --accent-soft:#FBE9E2; --ok:#3AA76D;
+    --shadow:0 1px 2px rgba(40,30,20,.04), 0 8px 24px rgba(40,30,20,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:110px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(251,250,247,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex;align-items:center;gap:12px;padding:14px 0}
+  .topbar h1{font-size:18px;font-weight:700;letter-spacing:-.3px;margin:0;flex:1}
+  .ghostbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+  .intro{padding:16px 0 4px}
+  .intro h2{font-size:20px;margin:0 0 4px;letter-spacing:-.3px}
+  .intro p{color:var(--muted);font-size:14px;margin:0}
+  .lens{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:14px;margin:12px 0;box-shadow:var(--shadow);cursor:pointer;transition:.12s}
+  .lens.on{border-color:var(--accent);background:#fffaf7}
+  .lens .top{display:flex;align-items:center;gap:12px}
+  .lens .emoji{font-size:24px;width:42px;height:42px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .lens.on .emoji{background:var(--accent-soft)}
+  .lens .meta{flex:1;min-width:0}
+  .lens .nm{font-weight:680;font-size:16px}
+  .lens .ds{font-size:13px;color:var(--muted);margin-top:1px}
+  .lens .chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+  .lens.on .chk{background:var(--accent);border-color:var(--accent)}
+  .weight{margin-top:12px;display:none;align-items:center;gap:10px}
+  .lens.on .weight{display:flex}
+  .weight label{font-size:12px;color:var(--muted);width:64px}
+  .weight input[type=range]{flex:1;accent-color:var(--accent)}
+  .weight .wv{font-size:13px;font-weight:700;color:var(--accent);width:54px;text-align:right}
+  .blend{background:var(--accent-soft);border-radius:14px;padding:13px 15px;margin:14px 0;font-size:14px;color:#7a3b16}
+  .blend b{color:var(--accent)}
+  .notes{margin-top:16px}
+  .notes label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+  .notes textarea{width:100%;margin-top:6px;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;font-family:inherit;min-height:84px;resize:vertical}
+  .bottombar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(251,250,247,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .bottombar .inner{max-width:680px;margin:0 auto;display:flex;gap:10px;align-items:center}
+  .bottombar .hint{font-size:13px;color:var(--muted)}
+  .btn{border:none;border-radius:12px;padding:13px 20px;font-size:15px;font-weight:650;cursor:pointer;transition:.12s}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--accent);color:#fff;margin-left:auto}
+  .btn:disabled{opacity:.5}
+  .gate{position:fixed;inset:0;background:var(--bg);z-index:50;display:grid;place-items:center;padding:24px}
+  .gate .box{max-width:380px;text-align:center}
+  .gate h2{font-size:20px;margin:10px 0 4px}.gate p{color:var(--muted);font-size:14px;margin:0 0 16px}
+  .gate input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:15px;text-align:center}
+  .gate .btn{width:100%;margin-top:12px}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="wrap"><div class="row">
+  <h1>🎛️ Menu Design</h1>
+  <a class="ghostbtn" href="admin.html">Admin</a>
+  <button class="ghostbtn" id="resetKey">Key</button>
+</div></div></div>
+
+<div class="wrap">
+  <div class="intro">
+    <h2>How should each menu be designed?</h2>
+    <p>Pick the expert lenses MenuEngine should design through. Choose one, or blend several with weights — we'll balance the next batch accordingly.</p>
+  </div>
+  <div id="lenses"></div>
+  <div class="blend" id="blend">Select at least one lens to set your design philosophy.</div>
+  <div class="notes">
+    <label>Extra guidance for the designer (optional)</label>
+    <textarea id="notes" placeholder="e.g. emphasize Thai & Japanese, keep dinners under 45 min to cook, more soups in cool weather…"></textarea>
+  </div>
+</div>
+
+<div class="bottombar"><div class="inner">
+  <span class="hint" id="savedHint"></span>
+  <button class="btn primary" id="saveBtn">Save design settings</button>
+</div></div>
+
+<div class="gate" id="gate"><div class="box">
+  <div style="font-size:34px">🔑</div>
+  <h2>Admin access</h2>
+  <p>Enter the admin key to change menu design settings.</p>
+  <input type="password" id="keyInput" placeholder="Admin key" />
+  <button class="btn primary" id="keyBtn">Enter</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="config.local.js" onerror="void 0"></script>
+<script src="api.js"></script>
+<script>
+const KEY_LS = "menuengine.adminKey";
+const LENSES = [
+  {key:"nutritionist", emoji:"🥦", name:"Nutritionist", desc:"Balanced macros, more veg & fiber, lower sugar/sodium, sensible portions."},
+  {key:"doctor",       emoji:"🩺", name:"Doctor",       desc:"Designed around health conditions — diabetes-friendly, heart-healthy, soft textures where needed."},
+  {key:"chef",         emoji:"👨‍🍳", name:"Chef",         desc:"Flavor & variety first — interesting, well-rounded, restaurant-quality meals."},
+  {key:"trainer",      emoji:"💪", name:"Trainer",      desc:"High protein to support training and muscle for the active members."},
+  {key:"thrifty",      emoji:"💰", name:"Thrifty",      desc:"Budget-friendly & seasonal, sharing ingredients to minimize cost and waste."},
+  {key:"comfort",      emoji:"🏡", name:"Family Comfort",desc:"Crowd-pleasing, kid-friendly favorites with soft, comforting options."},
+];
+
+let selected = {};   // {key: weight}
+
+function slug(){ return (window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug) || ""; }
+function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function render(){
+  const host = document.getElementById("lenses");
+  host.innerHTML = "";
+  LENSES.forEach(L=>{
+    const on = selected[L.key] != null;
+    const w = on ? selected[L.key] : 3;
+    const el = document.createElement("div");
+    el.className = "lens" + (on?" on":"");
+    el.innerHTML = `
+      <div class="top">
+        <div class="emoji">${L.emoji}</div>
+        <div class="meta"><div class="nm">${L.name}</div><div class="ds">${esc(L.desc)}</div></div>
+        <div class="chk">${on?"✓":""}</div>
+      </div>
+      <div class="weight">
+        <label>Emphasis</label>
+        <input type="range" min="1" max="5" value="${w}">
+        <span class="wv">${wlabel(w)}</span>
+      </div>`;
+    // toggle on header click (not the slider)
+    el.querySelector(".top").addEventListener("click", ()=>{
+      if(selected[L.key]!=null) delete selected[L.key]; else selected[L.key]=3;
+      render(); updateBlend();
+    });
+    const range = el.querySelector("input[type=range]");
+    range.addEventListener("input", ()=>{
+      selected[L.key] = +range.value;
+      el.querySelector(".wv").textContent = wlabel(+range.value);
+      updateBlend();
+    });
+    host.appendChild(el);
+  });
+  updateBlend();
+}
+function wlabel(w){ return ["","low","mild","medium","high","max"][w] || w; }
+
+function updateBlend(){
+  const keys = Object.keys(selected);
+  const el = document.getElementById("blend");
+  if(!keys.length){ el.innerHTML = "Select at least one lens to set your design philosophy."; return; }
+  const total = keys.reduce((s,k)=>s+selected[k],0);
+  const parts = keys.sort((a,b)=>selected[b]-selected[a]).map(k=>{
+    const L = LENSES.find(x=>x.key===k);
+    const pct = Math.round(selected[k]/total*100);
+    return `<b>${L.name} ${pct}%</b>`;
+  });
+  el.innerHTML = "Next menus will be designed as: " + parts.join(" · ");
+}
+
+/* ---- load / save ---- */
+async function load(){
+  if(!(window.MenuEngineAPI && MenuEngineAPI.hasApi() && slug())){ render(); return; }
+  try{
+    const r = await MenuEngineAPI.getSettings(slug());
+    if(r && r.ok && r.settings){
+      try{
+        const dp = JSON.parse(r.settings.design_principles||"{}");
+        selected = dp.lenses || {};
+      }catch(e){ selected = {}; }
+      document.getElementById("notes").value = r.settings.notes || "";
+      const u = r.settings.updated_at;
+      if(u) document.getElementById("savedHint").textContent = "Last saved " + new Date(u).toLocaleDateString();
+    }
+  }catch(e){}
+  render();
+}
+
+document.getElementById("saveBtn").addEventListener("click", async function(){
+  if(!Object.keys(selected).length){ toast("Pick at least one lens"); return; }
+  const b=this; b.disabled=true; b.textContent="Saving…";
+  const payload = {
+    slug: slug(),
+    design_principles: JSON.stringify({ lenses: selected }),
+    notes: document.getElementById("notes").value
+  };
+  try{
+    const r = await MenuEngineAPI.saveSettings(payload);
+    toast(r.ok ? "Saved ✓" : "Save failed");
+    if(r.ok) document.getElementById("savedHint").textContent = "Last saved just now";
+  }catch(e){ toast("Error"); }
+  b.disabled=false; b.textContent="Save design settings";
+});
+
+/* ---- toast ---- */
+let tt; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),1900); }
+
+/* ---- key gate ---- */
+function applyKey(k){ if(window.MENUENGINE_CONFIG) MENUENGINE_CONFIG.writeToken = k; }
+document.getElementById("keyBtn").addEventListener("click", function(){
+  const k=document.getElementById("keyInput").value.trim(); if(!k) return;
+  localStorage.setItem(KEY_LS,k); applyKey(k); document.getElementById("gate").style.display="none"; load();
+});
+document.getElementById("keyInput").addEventListener("keydown", e=>{ if(e.key==="Enter") document.getElementById("keyBtn").click(); });
+document.getElementById("resetKey").addEventListener("click", ()=>{ localStorage.removeItem(KEY_LS); document.getElementById("gate").style.display="grid"; });
+
+(function(){
+  const saved = localStorage.getItem(KEY_LS);
+  if(saved){ applyKey(saved); document.getElementById("gate").style.display="none"; load(); }
+  else { document.getElementById("gate").style.display="grid"; render(); }
+})();
+</script>
+</body>
+</html>

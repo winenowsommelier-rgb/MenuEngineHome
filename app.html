@@ -134,6 +134,34 @@
   #thanks p{margin:0 0 22px; color:var(--muted); max-width:340px}
 
   .footnote{text-align:center; color:var(--muted); font-size:11px; padding:8px 0 26px}
+
+  /* ---------- Dish detail modal ---------- */
+  .d-body{cursor:pointer}
+  .d-name .info{font-size:11px;color:var(--muted);margin-left:6px;opacity:.7}
+  .modal-bg{position:fixed; inset:0; background:rgba(24,18,12,.5); z-index:60; display:none;
+    align-items:flex-end; justify-content:center; padding:0}
+  .modal-bg.show{display:flex}
+  .sheet{background:var(--surface); width:100%; max-width:680px; border-radius:22px 22px 0 0;
+    max-height:90vh; overflow-y:auto; box-shadow:0 -8px 40px rgba(0,0,0,.2); animation:slideup .22s ease}
+  @keyframes slideup{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+  .sheet .hero{height:200px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .sheet .hero img{width:100%;height:100%;object-fit:cover}
+  .sheet .hero .bigemoji{font-size:72px}
+  .sheet .close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;
+    border:none;background:rgba(255,255,255,.9);font-size:18px;cursor:pointer;box-shadow:var(--shadow)}
+  .sheet .pad{padding:18px 18px 26px}
+  .sheet h3{margin:0 0 2px;font-size:21px;letter-spacing:-.3px}
+  .sheet .cz{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .sheet .desc{font-size:15px;line-height:1.55;margin:0 0 14px}
+  .sheet .lbl2{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
+  .sheet .ing{font-size:14px;color:var(--ink)}
+  .sheet .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .sheet .tg{font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted)}
+  .sheet .media{display:flex;gap:10px;margin-top:18px}
+  .sheet .media a{flex:1;text-align:center;text-decoration:none;border-radius:12px;padding:12px;font-size:14px;font-weight:650}
+  .sheet .media .yt{background:#ff3b30;color:#fff}
+  .sheet .media .ph{background:var(--ink);color:#fff}
+  .sheet .none{font-size:14px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -187,6 +215,22 @@
     <button class="btn primary block" id="backBtn">Back to my week</button>
   </div>
 </section>
+
+<!-- ========== DISH DETAIL ========== -->
+<div class="modal-bg" id="dishModal">
+  <div class="sheet">
+    <div class="hero" id="dishHero"></div>
+    <button class="close" id="dishClose">✕</button>
+    <div class="pad">
+      <h3 id="dishName"></h3>
+      <div class="cz" id="dishCuisine"></div>
+      <p class="desc" id="dishDesc"></p>
+      <div id="dishIngWrap"><div class="lbl2">What's in it</div><div class="ing" id="dishIng"></div></div>
+      <div class="tags" id="dishTags"></div>
+      <div class="media" id="dishMedia"></div>
+    </div>
+  </div>
+</div>
 
 <script src="config.js"></script>
 <script src="config.local.js" onerror="void 0"></script>
@@ -400,8 +444,8 @@ function renderDay(){
       const disliked = !!dislikes[dkey(day.date, meal, d.n)];
       return `<div class="dish ${disliked?"disliked":""}" data-di="${di}">
         <span class="dot ${d.c}"></span>
-        <div class="d-body">
-          <div class="d-name">${esc(d.n)}<span class="role">${esc(d.r||"")}</span></div>
+        <div class="d-body" data-dish="${esc(d.n)}">
+          <div class="d-name">${esc(d.n)}<span class="role">${esc(d.r||"")}</span><span class="info">ⓘ</span></div>
           ${note ? `<div class="d-note">${esc(note)}</div>` : ""}
         </div>
         <button class="dish-x" data-dish="${esc(d.n)}" title="Not for me">
@@ -450,7 +494,58 @@ function renderDay(){
       persist(); renderDay(); updateFlag();
     });
   });
+  // tap a dish to see details
+  host.querySelectorAll(".d-body").forEach(b=>{
+    b.addEventListener("click", ()=> openDishModal(b.dataset.dish));
+  });
 }
+
+/* ============================ Dish library + detail modal ============================ */
+let DISHES = [];
+async function loadDishes(){
+  try{ const r = await fetch("data/dishes.json"); const j = await r.json(); DISHES = j.dishes || []; }
+  catch(e){ DISHES = []; }
+}
+function dtokens(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>2); }
+function lookupDish(name){
+  const nt = dtokens(name); let best=null, score=0;
+  DISHES.forEach(d=>{
+    const dt = dtokens(d.name);
+    let sc = dt.filter(w=>nt.includes(w)).length;
+    if(d.name.toLowerCase()===String(name||"").toLowerCase()) sc += 10;
+    if(sc>score){ score=sc; best=d; }
+  });
+  return score>0 ? best : null;
+}
+function ytLink(n){ return "https://www.youtube.com/results?search_query="+encodeURIComponent(n+" recipe"); }
+function phLink(n){ return "https://www.google.com/search?tbm=isch&q="+encodeURIComponent(n+" food dish"); }
+function imgUrl(n){ return "https://loremflickr.com/600/360/"+encodeURIComponent(dtokens(n).join(",")+",food"); }
+
+function openDishModal(name){
+  const d = lookupDish(name);
+  const title = d ? d.name : name;
+  const emoji = (d && d.emoji) ? d.emoji : "🍽️";
+  document.getElementById("dishName").textContent = title;
+  document.getElementById("dishCuisine").textContent = d ? d.cuisine : "";
+  document.getElementById("dishDesc").textContent = d ? d.desc
+    : "No description yet — tap below to see photos or a video of this dish.";
+  const ingWrap = document.getElementById("dishIngWrap");
+  if(d && d.ingredients){ ingWrap.style.display="block"; document.getElementById("dishIng").textContent = d.ingredients; }
+  else ingWrap.style.display="none";
+  const tg = document.getElementById("dishTags"); tg.innerHTML="";
+  ((d && d.tags) || []).forEach(t=>{ const s=document.createElement("span"); s.className="tg"; s.textContent=t; tg.appendChild(s); });
+  const hero = document.getElementById("dishHero");
+  hero.innerHTML = `<img id="dishImg" alt="">`;
+  const img = document.getElementById("dishImg");
+  img.onerror = ()=>{ hero.innerHTML = `<span class="bigemoji">${emoji}</span>`; };
+  img.src = imgUrl(title);
+  document.getElementById("dishMedia").innerHTML =
+    `<a class="yt" href="${ytLink(title)}" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+     <a class="ph" href="${phLink(title)}" target="_blank" rel="noopener">📷 See photos</a>`;
+  document.getElementById("dishModal").classList.add("show");
+}
+document.getElementById("dishClose").addEventListener("click", ()=>document.getElementById("dishModal").classList.remove("show"));
+document.getElementById("dishModal").addEventListener("click", e=>{ if(e.target.id==="dishModal") document.getElementById("dishModal").classList.remove("show"); });
 
 // Light personalization: surface the note most relevant to the current member.
 function personalNote(d, meal){
@@ -511,6 +606,7 @@ document.getElementById("backBtn").addEventListener("click", ()=>show("week"));
 function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 
 renderLogin();
+loadDishes();
 loadData().then(()=>{
   renderLogin();
   if(me){ renderDays(); renderDay(); updateFlag(); }

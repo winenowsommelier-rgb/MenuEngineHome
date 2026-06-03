@@ -47,6 +47,7 @@ const SHEETS = {
                'dish_name', 'member_code', 'vote', 'reason', 'created_at'],
   Ingredients:['id', 'recipe_id', 'item', 'qty_per_serving', 'unit', 'aisle',
                'created_at'],
+  Settings:   ['household_id', 'design_principles', 'notes', 'updated_at'],
 };
 
 /** Run once (and after schema changes) to build/refresh all tab headers. */
@@ -123,6 +124,13 @@ function doGet(e) {
         .filter(function (v) { return !start || norm(v.week_start) === norm(start); })
         .map(function (v) { v.week_start = norm(v.week_start); v.date = norm(v.date); return v; });
       return json({ ok: true, votes: votes });
+    }
+
+    if (action === 'getSettings') {
+      const hh = findBy('Households', 'share_slug', e.parameter.slug);
+      if (!hh) return json({ ok: false, error: 'not_found' });
+      const row = filterBy('Settings', 'household_id', hh.id)[0] || null;
+      return json({ ok: true, settings: row });
     }
 
     return json({ ok: false, error: 'unknown_action' });
@@ -217,6 +225,16 @@ function doPost(e) {
           position: it.position != null ? it.position : i, created_at: now() });
       });
       return json({ ok: true, id: id, share_slug: slug });
+    }
+
+    if (action === 'saveSettings') {
+      let hid = body.household_id;
+      if (!hid && body.slug) { const hh = findBy('Households', 'share_slug', body.slug); hid = hh ? hh.id : null; }
+      if (!hid) return json({ ok: false, error: 'household_required' });
+      deleteMatch('Settings', { household_id: hid });
+      upsert('Settings', { household_id: hid, design_principles: body.design_principles || '',
+        notes: body.notes || '', updated_at: now() });
+      return json({ ok: true });
     }
 
     // ----- v2: publish a week of 3-meal days -----

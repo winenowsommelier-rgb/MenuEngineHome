@@ -40,6 +40,8 @@
     savePicks: function (data) { return post('savePicks', data); },
     saveMenu: function (data) { return post('saveMenu', data); },
     publishWeek: function (data) { return post('publishWeek', data); },
+    getSettings: function (slug) { return get('getSettings', { slug: slug }); },
+    saveSettings: function (data) { return post('saveSettings', data); },
     // Member vote submission — gated by household slug, no admin token needed.
     submitVotes: function (data) { return post('submitVotes', data); }
   };

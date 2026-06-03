@@ -64,7 +64,7 @@ You should see `{"ok":true,"app":"MenuEngine"}`.
 ## API reference (v2)
 
 Tabs built by `setup()`: Households, Members, TastePicks, Recipes, Menus,
-MenuItems, **Meals, MealDishes, Votes, Ingredients**.
+MenuItems, **Meals, MealDishes, Votes, Ingredients, Settings**.
 
 **Reads** (GET, gated by share slug):
 - `?action=ping` → health check (`{ok:true, v:2}`)
@@ -73,12 +73,14 @@ MenuItems, **Meals, MealDishes, Votes, Ingredients**.
 - `?action=getWeek&slug=…&start=YYYY-MM-DD` → members + the week's meals, each
   with its dishes (the 3-meals-a-day model)
 - `?action=getVotes&slug=…&start=YYYY-MM-DD` → all member votes for the week
+- `?action=getSettings&slug=…` → the household's menu-design settings
 
 **Admin writes** (POST JSON, must include the `"token"`):
 - `saveHousehold` → `{token, id?, share_slug?, name, members:[{code,name,sex,age,weight_kg,height_cm,diet,spice,portion,portion_factor,lunchWeekday,allergies,dislikes,health,goals,texture,notes}]}`
 - `savePicks` → `{token, household_id, byCuisine:{Thai:[…],…}}`
 - `saveMenu` → `{token, household_id, title, period, starts_on, items:[…]}` (legacy)
 - `publishWeek` → `{token, slug|household_id, week_start, status, meals:[{date,meal_type,position,dishes:[{dish_name,cuisine,role,notes,planned_servings,position}]}]}`
+- `saveSettings` → `{token, slug|household_id, design_principles, notes}` (design lens per batch)
 
 **Member write** (POST JSON, gated by household `slug` — NO admin token):
 - `submitVotes` → `{slug, member_code, week_start, vetoes:[{date, meal_type, vote, dish_name, reason}]}`
