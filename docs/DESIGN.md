@@ -56,13 +56,52 @@ drafts                     meals (+reason)      dishes, locks       sent to cook
 | Meal | Character | Health hooks |
 |------|-----------|--------------|
 | **Breakfast** | Cooked by the cook, lighter, some soft | Congee/eggs for GGM & Neo; protein (eggs) for trainers; low-sugar for Dad |
-| **Lunch** | Rice bowls, noodle soups, salads · **weekday = mixed attendance** | Fiber + protein; portioned only for who's home |
+| **Lunch** | Rice bowls, noodle soups, salads | Fiber + protein. **Cook full for everyone by default; only an explicit "away" reduces it** |
 | **Dinner** | The main event (current engine) | Beef‑free, fish‑free (shrimp OK), spice on the side, soft options |
 
 **Planning unit:** **calendar month**, drafted ahead and **published one week at
 a time** so members always review the upcoming 7 days.
 
 ---
+
+## 3a. Menu-design method — how dishes are paired (the craft)
+
+MenuEngine is not a list generator; it composes meals like a chef + nutritionist
+working together. Every batch follows these principles, tuned by the admin's
+chosen **design lens** (see Settings).
+
+**1 — The balanced plate.** Every dinner = a **protein anchor** + a **vegetable/
+fiber** + a **smart carb** + a **contrast element**. Breakfast and lunch carry a
+vegetable or fruit too, so fiber appears at all three meals.
+
+**2 — Contrast & pairing within a meal.** A meal should move across these axes,
+not sit on one note:
+`rich ↔ fresh` · `spicy ↔ cooling` · `soft ↔ crunchy` · `umami ↔ bright (sour/citrus)` · `warm ↔ cool`.
+A rich braise is paired with a sharp pickle and plain rice; a fiery stir-fry with
+a cooling coconut soup and a crunchy papaya salad. The *cook-notes on each dish
+say why it's there* so the family sees the intent.
+
+**3 — Variety across the week.** Rotate **proteins** (chicken, pork, shrimp,
+tofu, egg, duck), **methods** (steam, grill, stir-fry, braise, fry, raw/salad),
+and **cuisines**. Never repeat the same dish or the same side two days running.
+
+**4 — Fiber & colour.** Aim for 3+ colours on the table each dinner and a
+vegetable/fruit at every meal — fibre is designed in, not bolted on.
+
+**5 — Inclusive by design.** Each dinner carries a **soft option** (Grandmom,
+Neo), a **high-protein option** (the training members), **heat-on-the-side**
+(Dad), and always respects no-beef / no-fish / no-raw-fish.
+
+**6 — Rhythm of the week.** Cleaner, lighter weekdays; more generous "feast"
+energy at weekends (dim-sum brunch, izakaya spread) for shared joy.
+
+**7 — A delight a day.** At least one dish people look forward to — the *joy of
+eating*, not just nutrition.
+
+The **design lens** reweights these: *Nutritionist* pushes fibre/macro balance,
+*Doctor* foregrounds the health constraints, *Chef* maximises pairing & variety,
+*Trainer* raises protein, *Thrifty* shares ingredients across days, *Family
+Comfort* leans into crowd-pleasers — or any weighted blend.
 
 ## 4. Portion engine (minimize leftovers)
 

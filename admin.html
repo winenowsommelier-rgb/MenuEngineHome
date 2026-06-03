@@ -143,12 +143,8 @@ function isWeekend(date){ const g=new Date(date+"T00:00:00").getDay(); return g=
 function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 
 /* ---- attendance + portions ---- */
-function present(meal_type, date){
-  return MEMBERS.filter(function(m){
-    if(meal_type==="lunch" && !isWeekend(date)) return (m.lunch_weekday||"home")!=="away";
-    return true;
-  });
-}
+// Everyone counts for every meal by default; only an "away" vote removes them.
+function present(meal_type, date){ return MEMBERS.slice(); }
 function awayCodes(date, meal_type){
   return new Set(VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type && v.vote==="away"; })
     .map(function(v){ return v.member_code; }));
@@ -157,21 +153,21 @@ function dishDislikers(date, meal_type, dish){
   return VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type && v.vote==="dislike" && v.dish_name===dish; })
     .map(function(v){ return v.member_code; });
 }
-// Meal-level cook count: present members minus those away for the meal.
+// Meal-level cook count: full house minus those away for the meal.
 function cookQty(meal_type, date){
   const aw = awayCodes(date, meal_type);
   const sum = present(meal_type, date).filter(function(m){ return !aw.has(m.code); })
     .reduce(function(s,m){ return s + (Number(m.portion_factor)||1); }, 0);
-  return roundHalfUp(sum * (MEAL_WEIGHT[meal_type]||1));
+  return roundHalfUp(sum);
 }
-// Per-dish cook count: present, minus away, minus those who skip this dish.
+// Per-dish cook count: full house, minus away, minus those who skip this dish.
 function dishQty(meal_type, date, dish){
   const aw = awayCodes(date, meal_type);
   const dis = new Set(dishDislikers(date, meal_type, dish));
   const sum = present(meal_type, date)
     .filter(function(m){ return !aw.has(m.code) && !dis.has(m.code); })
     .reduce(function(s,m){ return s + (Number(m.portion_factor)||1); }, 0);
-  return roundHalfUp(sum * (MEAL_WEIGHT[meal_type]||1));
+  return roundHalfUp(sum);
 }
 function votesFor(date, meal_type){
   return VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type; });
@@ -258,7 +254,6 @@ function mealCard(date, mt, meal){
   const totalFlags = aways.length + dishVotes.length;
   const fclass = totalFlags>=3 ? "f3" : totalFlags===2 ? "f2" : totalFlags===1 ? "f1" : "";
   const qty = cookQty(mt, date);
-  const partial = (mt==="lunch" && !isWeekend(date));
 
   let dishHtml = (meal.dishes||[]).map(function(d, i){
     if(editing){
@@ -287,7 +282,7 @@ function mealCard(date, mt, meal){
   el.innerHTML = `
     <div class="meal-head">
       <span class="ico">${MEAL_ICON[mt]}</span>
-      <span class="lbl">${mt}${partial?" · "+present(mt,date).length+" home":""}</span>
+      <span class="lbl">${mt}</span>
       <span class="qty">Cook <b>~${qty}</b></span>
       <span class="flagbadge ${fclass}" data-toggle="1">${aways.length?"🚶"+aways.length+" ":""}🚩 ${dishVotes.length}</span>
     </div>

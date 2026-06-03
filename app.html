@@ -362,14 +362,10 @@ function mkey(date, meal){ return date + "|" + meal; }
 function dkey(date, meal, dish){ return date + "|" + meal + "|" + dish; }
 function roundHalfUp(x){ return Math.ceil(x*2)/2; }
 function isWeekend(date){ const g=new Date(date+"T00:00:00").getDay(); return g===0||g===6; }
-// Who's home for this meal? Breakfast & dinner: everyone. Weekday lunch: only those marked home.
-function attendees(meal, date){
-  return MEMBERS.filter(m=>{
-    if(meal==="lunch" && !isWeekend(date)) return m.lunchWeekday!=="away";
-    return true;
-  });
-}
-function isAttendee(m, meal, date){ return attendees(meal,date).some(x=>x.code===m.code); }
+// Everyone is counted for every meal by default. Only an explicit "I'm away"
+// vote removes a member's portion from that meal.
+function attendees(meal, date){ return MEMBERS.slice(); }
+function isAttendee(m, meal, date){ return true; }
 
 /* ============================ Login ============================ */
 function renderLogin(){
@@ -429,12 +425,11 @@ function renderDay(){
     if(!dishes.length) return;
     const isAway = !!away[mkey(day.date, meal)];
 
-    // cook quantity: who's present for this meal, minus me if I'm away
+    // cook quantity: full house by default, minus me if I'm away
     const present = attendees(meal, day.date);
-    let raw = present.reduce((s,m)=>s+m.factor,0) * MEAL_WEIGHT[meal];
-    if(isAway && isAttendee(me, meal, day.date)) raw -= me.factor * MEAL_WEIGHT[meal];
+    let raw = present.reduce((s,m)=>s+m.factor,0);
+    if(isAway) raw -= me.factor;
     const cook = roundHalfUp(Math.max(raw,0));
-    const partial = (meal==="lunch" && !isWeekend(day.date));
 
     const sec = document.createElement("div");
     sec.className = "meal" + (isAway ? " away" : "");
@@ -457,7 +452,7 @@ function renderDay(){
     sec.innerHTML = `
       <div class="meal-head">
         <span class="ico">${MEAL_ICON[meal]}</span>
-        <span class="lbl">${meal}${partial ? ` · ${present.length} home` : ""}</span>
+        <span class="lbl">${meal}</span>
         <span class="qty">Cook <b>~${cook}</b> servings</span>
       </div>
       <div class="card">
