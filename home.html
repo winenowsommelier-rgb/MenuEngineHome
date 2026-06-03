@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>MenuEngine</title>
+<style>
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --ink:#181818; --muted:#8A8578;
+    --line:#EDE8E0; --accent:#E8623D; --accent-soft:#FBE9E2; --ok:#3AA76D;
+    --shadow:0 1px 2px rgba(40,30,20,.04), 0 10px 30px rgba(40,30,20,.07);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(120% 70% at 50% -10%, #fff 0%, var(--bg) 60%);
+    color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;padding:0 18px 48px}
+  .hero{text-align:center;padding:54px 10px 22px}
+  .hero .logo{font-size:40px}
+  .hero h1{margin:10px 0 2px;font-size:28px;font-weight:720;letter-spacing:-.6px}
+  .hero .house{color:var(--accent);font-weight:700}
+  .hero p{margin:8px auto 0;color:var(--muted);font-size:15px;max-width:380px}
+
+  .primary{display:block;text-decoration:none;color:#fff;background:var(--accent);
+    border-radius:22px;padding:22px 22px;box-shadow:var(--shadow);margin:22px 0 14px;transition:transform .12s}
+  .primary:active{transform:scale(.985)}
+  .primary .k{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.85}
+  .primary .t{font-size:21px;font-weight:700;letter-spacing:-.3px;margin-top:3px}
+  .primary .s{font-size:14px;opacity:.9;margin-top:3px}
+  .primary .arrow{float:right;font-size:24px;opacity:.9;margin-top:6px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .tile{display:block;text-decoration:none;color:var(--ink);background:var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);transition:transform .12s,border-color .12s}
+  .tile:active{transform:scale(.97)}
+  .tile .e{font-size:22px}
+  .tile .nm{font-weight:650;margin-top:8px}
+  .tile .ds{font-size:12px;color:var(--muted);margin-top:1px}
+  .tile.admin{grid-column:1 / -1;display:flex;align-items:center;gap:14px}
+  .tile.admin .e{font-size:24px}
+  .tile.admin .grow{flex:1}
+
+  .share{background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    padding:18px;margin-top:22px;box-shadow:var(--shadow)}
+  .share h2{margin:0 0 3px;font-size:17px;letter-spacing:-.2px}
+  .share p{margin:0 0 14px;color:var(--muted);font-size:13px}
+  .share .btns{display:flex;flex-wrap:wrap;gap:9px}
+  .sbtn{flex:1;min-width:120px;border:none;border-radius:13px;padding:13px 12px;font-size:14px;
+    font-weight:650;cursor:pointer;text-decoration:none;text-align:center;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px}
+  .sbtn:active{transform:scale(.97)}
+  .sbtn.share{background:var(--accent)} .sbtn.wa{background:#25D366} .sbtn.line{background:#06C755}
+  .sbtn.mail{background:#5b6470} .sbtn.copy{background:var(--ink)}
+  .label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:26px 2px 10px}
+
+  .foot{text-align:center;color:var(--muted);font-size:12px;padding:28px 0 0}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="logo">🍽️</div>
+    <h1>MenuEngine</h1>
+    <p><span class="house" id="house">Your family's</span> menu for the week — designed for everyone, together.</p>
+  </div>
+
+  <a class="primary" href="app.html">
+    <span class="arrow">→</span>
+    <div class="k">For the family</div>
+    <div class="t">Review next week's menu</div>
+    <div class="s">Tap your name · see breakfast, lunch & dinner · tell us what you'd like</div>
+  </a>
+
+  <div class="label">Quick links</div>
+  <div class="grid">
+    <a class="tile" href="index.html"><div class="e">❤️</div><div class="nm">Taste setup</div><div class="ds">Pick dishes you love</div></a>
+    <a class="tile" href="profile.html"><div class="e">👨‍👩‍👧‍👦</div><div class="nm">Household</div><div class="ds">Who we cook for</div></a>
+    <a class="tile admin" href="admin.html">
+      <div class="e">🛠️</div>
+      <div class="grow"><div class="nm">Admin console</div><div class="ds">Review votes · edit dishes · lock the week · design lens · shopping list</div></div>
+      <div style="font-size:20px;color:var(--muted)">→</div>
+    </a>
+  </div>
+
+  <div class="share">
+    <h2>📣 Tell the family it's ready</h2>
+    <p>Send everyone the review link for next week's menu.</p>
+    <div class="btns">
+      <button class="sbtn share" id="shareBtn">Share…</button>
+      <a class="sbtn wa" id="waBtn" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="sbtn line" id="lineBtn" target="_blank" rel="noopener">LINE</a>
+      <a class="sbtn mail" id="mailBtn">Email</a>
+      <button class="sbtn copy" id="copyBtn">Copy link</button>
+    </div>
+  </div>
+
+  <div class="foot">No login needed · works on any phone</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="config.local.js" onerror="void 0"></script>
+<script src="api.js"></script>
+<script>
+const appURL = new URL("app.html", location.href).href;
+const msg = "🍽️ Next week's MenuEngine menu is ready! Tap to see your meals (breakfast, lunch & dinner) and flag anything you'd like changed:";
+const full = msg + " " + appURL;
+
+document.getElementById("waBtn").href   = "https://wa.me/?text=" + encodeURIComponent(full);
+document.getElementById("lineBtn").href = "https://line.me/R/msg/text/?" + encodeURIComponent(full);
+document.getElementById("mailBtn").addEventListener("click", function(){
+  location.href = "mailto:?subject=" + encodeURIComponent("Next week's menu is ready 🍽️") + "&body=" + encodeURIComponent(full);
+});
+
+const shareBtn = document.getElementById("shareBtn");
+if(navigator.share){
+  shareBtn.addEventListener("click", function(){
+    navigator.share({ title:"MenuEngine", text:msg, url:appURL }).catch(function(){});
+  });
+} else {
+  shareBtn.style.display = "none";
+}
+
+document.getElementById("copyBtn").addEventListener("click", async function(){
+  try{ await navigator.clipboard.writeText(appURL); toast("Link copied ✓"); }
+  catch(e){ toast("Copy failed — long-press the link"); }
+});
+
+let tt; function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),1900); }
+
+// Personalize the greeting with the household name if available.
+(async function(){
+  try{
+    if(window.MenuEngineAPI && MenuEngineAPI.hasApi() && window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug){
+      const r = await MenuEngineAPI.getWeek(MENUENGINE_CONFIG.householdSlug, "");
+      if(r && r.ok && r.household && r.household.name){
+        document.getElementById("house").textContent = r.household.name + "'s";
+      }
+    }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

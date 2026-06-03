@@ -93,6 +93,13 @@ Reads are gated by unguessable share slugs; writes by a shared token. See
   per batch (Nutritionist / Doctor / Chef / Trainer / Thrifty / Family Comfort)
   as a single choice or weighted blend; stored in the `Settings` tab and used
   when generating the next batch.
+- [x] **Recipe cards** — nutrition + ingredients + steps in the dish popup (Phase 1).
+- [x] **Shopping list** (`shopping.html`) — aisle-grouped, scaled by cook qty (Phase 2).
+- [x] **Curated photos + video** — real photo + embedded YouTube via TheMealDB for
+  verified dishes, graceful fallback otherwise (Phase 3).
+- [x] **Onboarding home** (`home.html`) — self-explaining hub routing family vs
+  admin + "share next week's menu" (native share / WhatsApp / LINE / email /
+  copy) (Phase 4).
 - [ ] Use the saved design lens + dish library when generating the next month.
 - [ ] Shopping-list engine: ingredients per recipe → aisle-grouped weekly list.
 - [ ] Cook day view: today's meals, exact quantities, recipe steps.
