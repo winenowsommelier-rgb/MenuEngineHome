@@ -170,6 +170,8 @@
   .sheet .media a{flex:1;text-align:center;text-decoration:none;border-radius:12px;padding:12px;font-size:14px;font-weight:650}
   .sheet .media .yt{background:#ff3b30;color:#fff}
   .sheet .media .ph{background:var(--ink);color:#fff}
+  .sheet .media .video{flex:1;position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
+  .sheet .media .video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .sheet .none{font-size:14px;color:var(--muted)}
 </style>
 </head>
@@ -525,7 +527,41 @@ function lookupDish(name){
 }
 function ytLink(n){ return "https://www.youtube.com/results?search_query="+encodeURIComponent(n+" recipe"); }
 function phLink(n){ return "https://www.google.com/search?tbm=isch&q="+encodeURIComponent(n+" food dish"); }
-function imgUrl(n){ return "https://loremflickr.com/600/360/"+encodeURIComponent(dtokens(n).join(",")+",food"); }
+function ytId(url){ const m=/[?&]v=([\w-]{11})/.exec(url||"")||/youtu\.be\/([\w-]{11})/.exec(url||""); return m?m[1]:""; }
+function searchLinks(n){
+  return `<a class="yt" href="${ytLink(n)}" target="_blank" rel="noopener">▶ Watch on YouTube</a>
+          <a class="ph" href="${phLink(n)}" target="_blank" rel="noopener">📷 See photos</a>`;
+}
+// Curated real media via TheMealDB (free, CORS-friendly). Only used when a dish
+// carries a verified `search` hint, so we never show a wrong photo.
+const MEDIA_CACHE = {};
+async function fetchMeal(query){
+  if(MEDIA_CACHE[query] !== undefined) return MEDIA_CACHE[query];
+  try{
+    const r = await fetch("https://www.themealdb.com/api/json/v1/1/search.php?s="+encodeURIComponent(query));
+    const j = await r.json();
+    MEDIA_CACHE[query] = (j.meals && j.meals[0]) || null;
+  }catch(e){ MEDIA_CACHE[query] = null; }
+  return MEDIA_CACHE[query];
+}
+async function loadDishMedia(d, title, emoji){
+  const hero = document.getElementById("dishHero");
+  const media = document.getElementById("dishMedia");
+  const query = (d && d.search) ? d.search : "";   // only curated dishes hit the API
+  if(query){
+    const meal = await fetchMeal(query);
+    if(meal && meal.strMealThumb){
+      hero.innerHTML = `<img src="${meal.strMealThumb}" alt="">`;
+      const id = ytId(meal.strYoutube);
+      media.innerHTML = id
+        ? `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${id}" title="${esc(title)} video" allow="encrypted-media" allowfullscreen loading="lazy"></iframe></div>`
+        : searchLinks(title);
+      return;
+    }
+  }
+  hero.innerHTML = `<span class="bigemoji">${emoji}</span>`;
+  media.innerHTML = searchLinks(title);
+}
 
 function openDishModal(name){
   const d = lookupDish(name);
@@ -563,15 +599,11 @@ function openDishModal(name){
   } else stWrap.style.display="none";
   const tg = document.getElementById("dishTags"); tg.innerHTML="";
   ((d && d.tags) || []).forEach(t=>{ const s=document.createElement("span"); s.className="tg"; s.textContent=t; tg.appendChild(s); });
-  const hero = document.getElementById("dishHero");
-  hero.innerHTML = `<img id="dishImg" alt="">`;
-  const img = document.getElementById("dishImg");
-  img.onerror = ()=>{ hero.innerHTML = `<span class="bigemoji">${emoji}</span>`; };
-  img.src = imgUrl(title);
-  document.getElementById("dishMedia").innerHTML =
-    `<a class="yt" href="${ytLink(title)}" target="_blank" rel="noopener">▶ Watch on YouTube</a>
-     <a class="ph" href="${phLink(title)}" target="_blank" rel="noopener">📷 See photos</a>`;
+  // hero shows the emoji immediately; real photo/video loads in async
+  document.getElementById("dishHero").innerHTML = `<span class="bigemoji">${emoji}</span>`;
+  document.getElementById("dishMedia").innerHTML = "";
   document.getElementById("dishModal").classList.add("show");
+  loadDishMedia(d, title, emoji);
 }
 document.getElementById("dishClose").addEventListener("click", ()=>document.getElementById("dishModal").classList.remove("show"));
 document.getElementById("dishModal").addEventListener("click", e=>{ if(e.target.id==="dishModal") document.getElementById("dishModal").classList.remove("show"); });

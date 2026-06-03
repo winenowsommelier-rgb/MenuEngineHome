@@ -195,7 +195,8 @@
           "unit": "pc",
           "aisle": "produce"
         }
-      ]
+      ],
+      "search": "Tom Yum"
     },
     {
       "name": "Som Tum",
@@ -326,7 +327,8 @@
           "unit": "g",
           "aisle": "pantry"
         }
-      ]
+      ],
+      "search": "Massaman"
     },
     {
       "name": "Panang Curry",
@@ -350,7 +352,8 @@
         "noodle",
         "sweet",
         "popular"
-      ]
+      ],
+      "search": "Pad Thai"
     },
     {
       "name": "Pad See Ew",
@@ -362,7 +365,8 @@
         "noodle",
         "mild",
         "savory"
-      ]
+      ],
+      "search": "Pad See Ew"
     },
     {
       "name": "Khao Man Gai",
@@ -446,7 +450,8 @@
         "spicy",
         "protein",
         "rice"
-      ]
+      ],
+      "search": "Kung Pao"
     },
     {
       "name": "Mapo Tofu",
@@ -562,7 +567,8 @@
           "unit": "tbsp",
           "aisle": "pantry"
         }
-      ]
+      ],
+      "search": "Sweet and Sour Pork"
     },
     {
       "name": "Yangzhou Fried Rice",
@@ -619,7 +625,8 @@
           "unit": "g",
           "aisle": "frozen"
         }
-      ]
+      ],
+      "search": "Fried Rice"
     },
     {
       "name": "Char Siu",
@@ -682,7 +689,8 @@
         "dumpling",
         "protein",
         "popular"
-      ]
+      ],
+      "search": "Wontons"
     },
     {
       "name": "Hot & Sour Soup",
@@ -718,7 +726,8 @@
         "soup",
         "noodle",
         "soft"
-      ]
+      ],
+      "search": "Wontons"
     },
     {
       "name": "Century Egg Congee",
@@ -848,7 +857,8 @@
           "unit": "cup",
           "aisle": "pantry"
         }
-      ]
+      ],
+      "search": "Teriyaki Chicken"
     },
     {
       "name": "Yakitori",
@@ -942,7 +952,8 @@
           "unit": "tbsp",
           "aisle": "pantry"
         }
-      ]
+      ],
+      "search": "Tonkatsu"
     },
     {
       "name": "Katsudon",
@@ -955,7 +966,8 @@
         "rice",
         "comfort",
         "protein"
-      ]
+      ],
+      "search": "Tonkatsu"
     },
     {
       "name": "Gyoza",
@@ -1001,7 +1013,8 @@
         "noodle",
         "soup",
         "soft"
-      ]
+      ],
+      "search": "Yaki Udon"
     },
     {
       "name": "Ramen",
@@ -1013,7 +1026,8 @@
         "noodle",
         "soup",
         "protein"
-      ]
+      ],
+      "search": "Ramen"
     },
     {
       "name": "Onigiri",
@@ -1048,7 +1062,8 @@
         "raw",
         "rice",
         "fish"
-      ]
+      ],
+      "search": "Sushi"
     },
     {
       "name": "Seaweed Salad",
