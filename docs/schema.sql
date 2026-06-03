@@ -158,11 +158,12 @@ create table if not exists votes (
   week_start   date not null,
   date         date not null,
   meal_type    text not null,
+  dish_name    text,                                 -- set for 'dislike' (per-dish); empty for 'away'
   member_code  text not null,
-  vote         text not null default 'dislike',     -- dislike (extendable)
+  vote         text not null default 'dislike'       -- dislike (skip this dish) | away (not eating this meal)
+                 check (vote in ('dislike','away')),
   reason       text,
-  created_at   timestamptz not null default now(),
-  unique (household_id, member_code, date, meal_type)
+  created_at   timestamptz not null default now()
 );
 create index if not exists votes_household_week_idx on votes(household_id, week_start);
 

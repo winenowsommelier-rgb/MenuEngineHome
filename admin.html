@@ -49,6 +49,8 @@
   .dot.Thai{background:var(--thai)}.dot.Chinese{background:var(--chinese)}.dot.Japanese{background:var(--japanese)}.dot.American{background:var(--american)}.dot.Home{background:var(--home)}
   .dish .dn{font-weight:600;font-size:15px;flex:1}
   .dish .role{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+  .dish .skip{font-size:11px;font-weight:700;color:#7a3b16;background:var(--flag2);border-radius:999px;padding:2px 8px}
+  .dish .dqty{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 9px}
   /* edit mode */
   .dish input.din{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;font-family:inherit}
   .dish select.dsel{border:1px solid var(--line);border-radius:8px;padding:7px;font-size:12px;background:#fff}
@@ -146,12 +148,27 @@ function present(meal_type, date){
     return true;
   });
 }
-function cookQty(meal_type, date){
-  // who's present, minus members who flagged this exact meal
-  const flaggers = new Set(VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type; })
+function awayCodes(date, meal_type){
+  return new Set(VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type && v.vote==="away"; })
     .map(function(v){ return v.member_code; }));
+}
+function dishDislikers(date, meal_type, dish){
+  return VOTES.filter(function(v){ return v.date===date && v.meal_type===meal_type && v.vote==="dislike" && v.dish_name===dish; })
+    .map(function(v){ return v.member_code; });
+}
+// Meal-level cook count: present members minus those away for the meal.
+function cookQty(meal_type, date){
+  const aw = awayCodes(date, meal_type);
+  const sum = present(meal_type, date).filter(function(m){ return !aw.has(m.code); })
+    .reduce(function(s,m){ return s + (Number(m.portion_factor)||1); }, 0);
+  return roundHalfUp(sum * (MEAL_WEIGHT[meal_type]||1));
+}
+// Per-dish cook count: present, minus away, minus those who skip this dish.
+function dishQty(meal_type, date, dish){
+  const aw = awayCodes(date, meal_type);
+  const dis = new Set(dishDislikers(date, meal_type, dish));
   const sum = present(meal_type, date)
-    .filter(function(m){ return !flaggers.has(m.code); })
+    .filter(function(m){ return !aw.has(m.code) && !dis.has(m.code); })
     .reduce(function(s,m){ return s + (Number(m.portion_factor)||1); }, 0);
   return roundHalfUp(sum * (MEAL_WEIGHT[meal_type]||1));
 }
@@ -235,8 +252,10 @@ function render(){
 function mealCard(date, mt, meal){
   const el = document.createElement("div");
   el.className = "meal";
-  const vs = votesFor(date, mt);
-  const fclass = vs.length>=3 ? "f3" : vs.length===2 ? "f2" : vs.length===1 ? "f1" : "";
+  const aways = Array.from(awayCodes(date, mt));
+  const dishVotes = votesFor(date, mt).filter(function(v){ return v.vote==="dislike"; });
+  const totalFlags = aways.length + dishVotes.length;
+  const fclass = totalFlags>=3 ? "f3" : totalFlags===2 ? "f2" : totalFlags===1 ? "f1" : "";
   const qty = cookQty(mt, date);
   const partial = (mt==="lunch" && !isWeekend(date));
 
@@ -248,22 +267,28 @@ function mealCard(date, mt, meal){
         <select class="dsel">${opts}</select>
         <button class="rm" title="Remove">✕</button></div>`;
     }
+    const skips = dishDislikers(date, mt, d.dish_name);
+    const skipBadge = skips.length ? `<span class="skip">🚩 ${skips.length}</span>` : "";
+    const lockQty = (STATUS==="locked") ? `<span class="dqty">${dishQty(mt,date,d.dish_name)}</span>` : "";
     return `<div class="dish">
       <span class="dot ${d.cuisine||'Home'}"></span>
       <span class="dn">${esc(d.dish_name)}</span>
-      <span class="role">${esc(d.role||"")}</span></div>`;
+      <span class="role">${esc(d.role||"")}</span>
+      ${skipBadge}${lockQty}</div>`;
   }).join("");
 
-  const voterHtml = vs.map(function(v){
-    return `<div class="voter"><b>${esc(memberName(v.member_code))}</b>${v.reason?" — "+esc(v.reason):""}</div>`;
-  }).join("");
+  let voterHtml = "";
+  if(aways.length) voterHtml += `<div class="voter"><b>🚶 Away:</b> ${aways.map(c=>esc(memberName(c))).join(", ")}</div>`;
+  dishVotes.forEach(function(v){
+    voterHtml += `<div class="voter">🚩 <b>${esc(v.dish_name)}</b> — ${esc(memberName(v.member_code))}${v.reason?" ("+esc(v.reason)+")":""}</div>`;
+  });
 
   el.innerHTML = `
     <div class="meal-head">
       <span class="ico">${MEAL_ICON[mt]}</span>
       <span class="lbl">${mt}${partial?" · "+present(mt,date).length+" home":""}</span>
       <span class="qty">Cook <b>~${qty}</b></span>
-      <span class="flagbadge ${fclass}" data-toggle="1">🚩 ${vs.length}</span>
+      <span class="flagbadge ${fclass}" data-toggle="1">${aways.length?"🚶"+aways.length+" ":""}🚩 ${dishVotes.length}</span>
     </div>
     ${dishHtml}
     ${editing ? `<div class="addrow"><button class="addbtn">+ Add dish</button></div>` : ``}
@@ -306,12 +331,13 @@ function buildMealsPayload(lock){
     ["breakfast","lunch","dinner"].forEach(function(mt){
       const m = g.map[date][mt];
       if(!m) return;
-      const qty = lock ? cookQty(mt, date) : null;
       meals.push({
         date: date, meal_type: mt, position: pos++,
         dishes: (m.dishes||[]).map(function(d, di){
           return { dish_name:d.dish_name, cuisine:d.cuisine||"Home", role:d.role||"",
-                   notes:d.notes||"", planned_servings: lock ? qty : (d.planned_servings||""), position:di };
+                   notes:d.notes||"",
+                   planned_servings: lock ? dishQty(mt, date, d.dish_name) : (d.planned_servings||""),
+                   position:di };
         })
       });
     });

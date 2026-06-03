@@ -81,7 +81,9 @@ MenuItems, **Meals, MealDishes, Votes, Ingredients**.
 - `publishWeek` → `{token, slug|household_id, week_start, status, meals:[{date,meal_type,position,dishes:[{dish_name,cuisine,role,notes,planned_servings,position}]}]}`
 
 **Member write** (POST JSON, gated by household `slug` — NO admin token):
-- `submitVotes` → `{slug, member_code, week_start, vetoes:[{date,meal_type,reason}]}`
-  (replaces that member's votes for the week)
+- `submitVotes` → `{slug, member_code, week_start, vetoes:[{date, meal_type, vote, dish_name, reason}]}`
+  (replaces that member's votes for the week). `vote` is either:
+  - `"dislike"` + `dish_name` → present but skipping that one dish (signals a swap)
+  - `"away"` (no dish_name) → not eating that meal at all (drops their portion)
 
 Array fields (`allergies`, `dislikes`) are stored pipe-`|`-joined in cells.

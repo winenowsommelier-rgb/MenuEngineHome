@@ -35,8 +35,13 @@ drafts                     meals (+reason)      dishes, locks       sent to cook
 1. **Generate** — MenuEngine drafts a month of breakfast/lunch/dinner from the
    family taste profile + each member's health constraints.
 2. **Publish** — the upcoming week opens for review; a link goes to each member.
-3. **Members review** (open window ~T‑7 → T‑3) — tap 👎 on any meal, optional
-   reason chip ("too spicy", "had it recently", "don't like X").
+3. **Members review** (open window ~T‑7 → T‑3) — two distinct actions, because
+   the family **shares dishes**:
+   - **Skip a dish** (per-dish 👎) — "I'm present, just won't eat *this* dish."
+     Signals the admin to add/swap something for them; doesn't drop the
+     headcount (they still eat the rest).
+   - **I'm away** (per-meal 🚶) — "Don't cook for me this meal at all." Drops
+     their portion from every dish in that meal.
 4. **Admin finalize** (T‑3 → T‑2) — a vote heatmap shows which meals are
    unpopular; admin swaps/keeps and **locks** the week.
 5. **Portion** — for every locked meal, compute *how much to cook* from who's
@@ -141,7 +146,8 @@ sums only the **present** members' factors per meal.
 
 - **Meals** — `id, menu_id, date, meal_type(breakfast|lunch|dinner), status, position`
 - **MealDishes** — `id, meal_id, dish_name, cuisine, role, recipe_id, planned_servings, notes, position`
-- **Votes** — `id, meal_id, member_code, vote(dislike), reason, created_at`
+- **Votes** — `id, household_id, week_start, date, meal_type, dish_name, member_code, vote(dislike|away), reason`
+  (dish-level skips carry `dish_name`; `away` applies to the whole meal)
 - **Ingredients** — `id, recipe_id, item, qty_per_serving, unit, aisle`
 - (existing **Menus** becomes a month/period container; **Members** already
   upgraded with codes, health and goals.)

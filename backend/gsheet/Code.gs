@@ -44,7 +44,7 @@ const SHEETS = {
   MealDishes: ['id', 'meal_id', 'dish_name', 'cuisine', 'role', 'recipe_id',
                'planned_servings', 'notes', 'position', 'created_at'],
   Votes:      ['id', 'household_id', 'week_start', 'date', 'meal_type',
-               'member_code', 'vote', 'reason', 'created_at'],
+               'dish_name', 'member_code', 'vote', 'reason', 'created_at'],
   Ingredients:['id', 'recipe_id', 'item', 'qty_per_serving', 'unit', 'aisle',
                'created_at'],
 };
@@ -149,7 +149,8 @@ function doPost(e) {
         upsert('Votes', {
           id: uid(), household_id: hh.id, week_start: start,
           date: v.date || '', meal_type: v.meal_type || '',
-          member_code: code, vote: 'dislike', reason: v.reason || '',
+          dish_name: v.dish_name || '',
+          member_code: code, vote: v.vote || 'dislike', reason: v.reason || '',
           created_at: now(),
         });
       });

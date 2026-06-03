@@ -92,15 +92,26 @@
   .dish .d-name .role{font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase;
     color:var(--muted); margin-left:7px}
   .dish .d-note{font-size:13px; color:var(--muted); margin-top:1px}
-  .meal.veto .card{opacity:.5}
-  .meal.veto .card .dish .d-name{text-decoration:line-through}
-  .meal-actions{display:flex; padding:11px 14px; border-top:1px solid var(--line); background:#fdfcfa}
-  .notme{margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--muted);
+  /* per-dish skip toggle */
+  .dish-x{flex-shrink:0; width:30px; height:30px; border-radius:50%; border:1px solid var(--line);
+    background:var(--surface); color:var(--muted); font-size:16px; line-height:1; cursor:pointer;
+    transition:.12s; align-self:center}
+  .dish-x:active{transform:scale(.9)}
+  .dish.disliked{opacity:.55}
+  .dish.disliked .d-name{text-decoration:line-through}
+  .dish.disliked .dish-x{background:var(--accent); border-color:var(--accent); color:#fff; transform:rotate(45deg)}
+  /* away meal */
+  .meal.away .card .dish{opacity:.45}
+  .meal.away .card .dish .d-name{text-decoration:line-through}
+  .meal.away .dish-x{visibility:hidden}
+  .meal-actions{display:flex; align-items:center; gap:10px; padding:11px 14px; border-top:1px solid var(--line); background:#fdfcfa}
+  .hint-sm{font-size:12px; color:var(--muted)}
+  .awaybtn{margin-left:auto; border:1px solid var(--line); background:var(--surface); color:var(--muted);
     border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; transition:.12s;
     display:flex; align-items:center; gap:6px}
-  .notme:active{transform:scale(.96)}
-  .meal.veto .notme{background:var(--accent); border-color:var(--accent); color:#fff}
-  .you{font-size:12px; color:var(--accent); font-weight:600; align-self:center}
+  .awaybtn:active{transform:scale(.96)}
+  .meal.away .awaybtn{background:var(--ink); border-color:var(--ink); color:#fff}
+  .you{font-size:12px; color:var(--ink); font-weight:600}
 
   /* ---------- Bottom bar ---------- */
   .bottombar{position:fixed; left:0; right:0; bottom:0; z-index:30;
@@ -161,7 +172,7 @@
   </div>
   <div class="bottombar">
     <div class="inner">
-      <div class="count"><b id="flagCount">0</b> meals flagged</div>
+      <div class="count"><b id="flagCount">0</b> · <span id="flagLabel">nothing flagged</span></div>
       <button class="btn primary" id="sendBtn">Send my feedback</button>
     </div>
   </div>
@@ -186,17 +197,17 @@
    for WEEK_START, the app loads it live and replaces these. */
 const WEEK_START = "2026-06-08";
 const SAMPLE_MEMBERS = [
-  {code:"GGM", name:"Great Grandma", av:"👵", factor:0.6, lunchWeekday:"home", badges:["Soft food","Mild"]},
-  {code:"D",   name:"Dad",           av:"🧔", factor:1.0, lunchWeekday:"home", badges:["No beef","Spicy OK 🌶️","Low sugar"]},
-  {code:"M",   name:"Mom",           av:"👩", factor:0.9, lunchWeekday:"home", badges:["No beef","No raw fish","Comfort"]},
-  {code:"N1",  name:"Eldest Son",    av:"🧑", factor:1.5, lunchWeekday:"away", badges:["No fish","High protein","More fiber"]},
-  {code:"N2",  name:"Second Son",    av:"👨", factor:1.4, lunchWeekday:"away", badges:["High protein"]},
-  {code:"N3",  name:"Third Son",     av:"👨", factor:1.5, lunchWeekday:"away", badges:["High protein"]},
-  {code:"N4",  name:"Fourth Son",    av:"👨", factor:1.5, lunchWeekday:"away", badges:["High protein"]},
-  {code:"N5",  name:"Note",          av:"🩰", factor:1.0, lunchWeekday:"away", badges:["High protein","Ballet"]},
-  {code:"N6",  name:"Neon",          av:"👧", factor:0.7, lunchWeekday:"away", badges:["Kid","Mild"]},
-  {code:"N7",  name:"Neo",           av:"🧒", factor:0.4, lunchWeekday:"home", badges:["Toddler","Soft"]},
-  {code:"L",   name:"Lookaew",       av:"👩‍🦰", factor:0.9, lunchWeekday:"away", badges:[]},
+  {code:"GGM", name:"Grandmom", av:"👵", factor:0.6, lunchWeekday:"home", badges:["Soft food","Mild"]},
+  {code:"D",   name:"Dad",      av:"🧔", factor:1.0, lunchWeekday:"home", badges:["No beef","Spicy OK 🌶️","Low sugar"]},
+  {code:"M",   name:"Mom",      av:"👩", factor:0.9, lunchWeekday:"home", badges:["No beef","No raw fish","Comfort"]},
+  {code:"N1",  name:"New",      av:"🧑", factor:1.5, lunchWeekday:"away", badges:["No fish","High protein","More fiber"]},
+  {code:"N2",  name:"Now",      av:"👨", factor:1.4, lunchWeekday:"away", badges:["High protein"]},
+  {code:"N3",  name:"Knight",   av:"👨", factor:1.5, lunchWeekday:"away", badges:["High protein"]},
+  {code:"N4",  name:"Net",      av:"👨", factor:1.5, lunchWeekday:"away", badges:["High protein"]},
+  {code:"N5",  name:"Note",     av:"🩰", factor:1.0, lunchWeekday:"away", badges:["High protein","Ballet"]},
+  {code:"N6",  name:"Neon",     av:"👧", factor:0.7, lunchWeekday:"away", badges:["Kid","Mild"]},
+  {code:"N7",  name:"Neo",      av:"🧒", factor:0.4, lunchWeekday:"home", badges:["Toddler","Soft"]},
+  {code:"L",   name:"Lookaew",  av:"👩‍🦰", factor:0.9, lunchWeekday:"away", badges:[]},
 ];
 
 const MEAL_WEIGHT = {breakfast:0.8, lunch:0.9, dinner:1.0};
@@ -300,9 +311,11 @@ async function loadData(){
 /* ============================ State ============================ */
 let me = null;          // current member
 let dayIdx = 1;         // default to Monday
-let vetoes = {};        // { "date|meal": true }
+let away = {};          // { "date|meal": true }  — not eating this meal at all
+let dislikes = {};      // { "date|meal|dish": true } — present but won't eat this dish
 
-function vkey(date, meal){ return date + "|" + meal; }
+function mkey(date, meal){ return date + "|" + meal; }
+function dkey(date, meal, dish){ return date + "|" + meal + "|" + dish; }
 function roundHalfUp(x){ return Math.ceil(x*2)/2; }
 function isWeekend(date){ const g=new Date(date+"T00:00:00").getDay(); return g===0||g===6; }
 // Who's home for this meal? Breakfast & dinner: everyone. Weekday lunch: only those marked home.
@@ -330,7 +343,9 @@ function renderLogin(){
 
 function enter(m){
   me = m;
-  vetoes = loadVetoes(m.code);
+  const saved = loadVetoes(m.code);
+  away = saved.away || {};
+  dislikes = saved.dislikes || {};
   document.getElementById("greetName").textContent = "Hi " + m.name.split(" ")[0];
   const b = document.getElementById("badges");
   b.innerHTML = "";
@@ -368,26 +383,31 @@ function renderDay(){
   ["breakfast","lunch","dinner"].forEach(meal=>{
     const dishes = day[meal] || [];
     if(!dishes.length) return;
-    const vetoed = !!vetoes[vkey(day.date, meal)];
+    const isAway = !!away[mkey(day.date, meal)];
 
-    // cook quantity: demand from who's actually eating this meal, minus me if I veto
+    // cook quantity: who's present for this meal, minus me if I'm away
     const present = attendees(meal, day.date);
     let raw = present.reduce((s,m)=>s+m.factor,0) * MEAL_WEIGHT[meal];
-    if(vetoed && isAttendee(me, meal, day.date)) raw -= me.factor * MEAL_WEIGHT[meal];
-    const cook = roundHalfUp(raw);
+    if(isAway && isAttendee(me, meal, day.date)) raw -= me.factor * MEAL_WEIGHT[meal];
+    const cook = roundHalfUp(Math.max(raw,0));
     const partial = (meal==="lunch" && !isWeekend(day.date));
 
     const sec = document.createElement("div");
-    sec.className = "meal" + (vetoed ? " veto" : "");
+    sec.className = "meal" + (isAway ? " away" : "");
 
-    let dishHtml = dishes.map(d=>{
+    let dishHtml = dishes.map((d,di)=>{
       const note = personalNote(d, meal);
-      return `<div class="dish">
+      const disliked = !!dislikes[dkey(day.date, meal, d.n)];
+      return `<div class="dish ${disliked?"disliked":""}" data-di="${di}">
         <span class="dot ${d.c}"></span>
         <div class="d-body">
           <div class="d-name">${esc(d.n)}<span class="role">${esc(d.r||"")}</span></div>
           ${note ? `<div class="d-note">${esc(note)}</div>` : ""}
-        </div></div>`;
+        </div>
+        <button class="dish-x" data-dish="${esc(d.n)}" title="Not for me">
+          ${disliked ? "✕" : "＋"}
+        </button>
+      </div>`;
     }).join("");
 
     sec.innerHTML = `
@@ -399,21 +419,35 @@ function renderDay(){
       <div class="card">
         ${dishHtml}
         <div class="meal-actions">
-          ${vetoed ? `<span class="you">You flagged this</span>` : ``}
-          <button class="notme" data-key="${vkey(day.date,meal)}">
-            ${vetoed ? "✓ Flagged" : "👎 Not for me"}
+          ${isAway ? `<span class="you">🚶 You're away — we won't cook for you</span>`
+                   : `<span class="hint-sm">Tap ✕ on a dish you'd skip</span>`}
+          <button class="awaybtn" data-key="${mkey(day.date,meal)}">
+            ${isAway ? "✓ Away" : "🚶 I'm away"}
           </button>
         </div>
       </div>`;
     host.appendChild(sec);
   });
 
-  host.querySelectorAll(".notme").forEach(btn=>{
+  // per-dish "not for me"
+  host.querySelectorAll(".dish-x").forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      e.stopPropagation();
+      const sec = btn.closest(".meal");
+      // find which day/meal via order: recompute from DOM index
+      const dish = btn.dataset.dish;
+      const mealName = sec.querySelector(".lbl").textContent.trim().split(" ")[0];
+      const k = dkey(day.date, mealName, dish);
+      if(dislikes[k]) delete dislikes[k]; else dislikes[k]=true;
+      persist(); renderDay(); updateFlag();
+    });
+  });
+  // meal "I'm away"
+  host.querySelectorAll(".awaybtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const k = btn.dataset.key;
-      if(vetoes[k]) delete vetoes[k]; else vetoes[k]=true;
-      saveVetoes(me.code, vetoes);
-      renderDay(); updateFlag();
+      if(away[k]) delete away[k]; else away[k]=true;
+      persist(); renderDay(); updateFlag();
     });
   });
 }
@@ -429,7 +463,13 @@ function personalNote(d, meal){
 }
 
 function updateFlag(){
-  document.getElementById("flagCount").textContent = Object.keys(vetoes).length;
+  const a = Object.keys(away).length, d = Object.keys(dislikes).length;
+  const el = document.getElementById("flagCount");
+  el.textContent = (a + d);
+  const lbl = document.getElementById("flagLabel");
+  if(lbl) lbl.textContent = (a||d)
+    ? `${a} away · ${d} dish${d===1?"":"es"} skipped`
+    : "nothing flagged";
 }
 
 /* ============================ Persistence (prototype) ============================ */
@@ -437,7 +477,7 @@ function loadVetoes(code){
   try{ return JSON.parse(localStorage.getItem("menuengine.votes."+code)) || {}; }
   catch(e){ return {}; }
 }
-function saveVetoes(code, v){ localStorage.setItem("menuengine.votes."+code, JSON.stringify(v)); }
+function persist(){ localStorage.setItem("menuengine.votes."+me.code, JSON.stringify({away:away, dislikes:dislikes})); }
 
 /* ============================ Nav ============================ */
 function show(id){
@@ -447,7 +487,9 @@ function show(id){
 }
 document.getElementById("switchUser").addEventListener("click", ()=>show("login"));
 document.getElementById("sendBtn").addEventListener("click", async ()=>{
-  const list = Object.keys(vetoes).map(k=>{ const p=k.split("|"); return {date:p[0], meal_type:p[1]}; });
+  const list = [];
+  Object.keys(away).forEach(k=>{ const p=k.split("|"); list.push({date:p[0], meal_type:p[1], vote:"away", dish_name:""}); });
+  Object.keys(dislikes).forEach(k=>{ const p=k.split("|"); list.push({date:p[0], meal_type:p[1], vote:"dislike", dish_name:p.slice(2).join("|")}); });
   const sendBtn = document.getElementById("sendBtn");
   if(window.MenuEngineAPI && MenuEngineAPI.hasApi() && window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug){
     sendBtn.textContent = "Sending…"; sendBtn.disabled = true;
@@ -458,9 +500,9 @@ document.getElementById("sendBtn").addEventListener("click", async ()=>{
     sendBtn.textContent = "Send my feedback"; sendBtn.disabled = false;
   }
   document.getElementById("thanksName").textContent = me.name.split(" ")[0];
-  const n = list.length;
-  document.getElementById("thanksMsg").textContent = n
-    ? `You flagged ${n} meal${n>1?"s":""}. The admin will review everyone's feedback and finalize the week.`
+  const a = Object.keys(away).length, d = Object.keys(dislikes).length;
+  document.getElementById("thanksMsg").textContent = (a||d)
+    ? `Got it — ${a} meal${a===1?"":"s"} you're away, ${d} dish${d===1?"":"es"} to skip. The admin will review and adjust the menu.`
     : `Looks like everything works for you! The admin will finalize the week soon.`;
   show("thanks");
 });
