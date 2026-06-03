@@ -52,12 +52,18 @@ const SHEETS = {
 /** Run once (and after schema changes) to build/refresh all tab headers. */
 function setup() {
   const ss = SpreadsheetApp.getActive();
+  const DATE_COLS = { week_start:1, date:1, scheduled_date:1, starts_on:1 };
   Object.keys(SHEETS).forEach(function (name) {
     let sh = ss.getSheetByName(name);
     if (!sh) sh = ss.insertSheet(name);
     const headers = SHEETS[name];
     sh.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight('bold');
     sh.setFrozenRows(1);
+    // Force date columns to plain text so Sheets doesn't coerce "2026-06-08"
+    // into a Date object (which breaks string matching on read).
+    headers.forEach(function (h, i) {
+      if (DATE_COLS[h]) sh.getRange(2, i + 1, Math.max(sh.getMaxRows() - 1, 1), 1).setNumberFormat('@');
+    });
   });
   const def = ss.getSheetByName('Sheet1');
   if (def && ss.getSheets().length > 1) ss.deleteSheet(def);
@@ -83,6 +89,7 @@ function doGet(e) {
       const menu = findBy('Menus', 'share_slug', e.parameter.slug);
       if (!menu) return json({ ok: false, error: 'not_found' });
       const items = filterBy('MenuItems', 'menu_id', menu.id)
+        .map(function (it) { it.scheduled_date = norm(it.scheduled_date); return it; })
         .sort(function (a, b) { return (a.position || 0) - (b.position || 0); });
       return json({ ok: true, menu: menu, items: items });
     }
@@ -92,10 +99,11 @@ function doGet(e) {
       if (!hh) return json({ ok: false, error: 'not_found' });
       const start = e.parameter.start;
       const meals = filterBy('Meals', 'household_id', hh.id)
-        .filter(function (m) { return !start || String(m.week_start) === String(start); })
+        .filter(function (m) { return !start || norm(m.week_start) === norm(start); })
+        .map(function (m) { m.week_start = norm(m.week_start); m.date = norm(m.date); return m; })
         .sort(function (a, b) {
           if (a.date === b.date) return (a.position || 0) - (b.position || 0);
-          return String(a.date) < String(b.date) ? -1 : 1;
+          return a.date < b.date ? -1 : 1;
         })
         .map(function (m) {
           m.dishes = filterBy('MealDishes', 'meal_id', m.id)
@@ -112,7 +120,8 @@ function doGet(e) {
       if (!hh) return json({ ok: false, error: 'not_found' });
       const start = e.parameter.start;
       const votes = filterBy('Votes', 'household_id', hh.id)
-        .filter(function (v) { return !start || String(v.week_start) === String(start); });
+        .filter(function (v) { return !start || norm(v.week_start) === norm(start); })
+        .map(function (v) { v.week_start = norm(v.week_start); v.date = norm(v.date); return v; });
       return json({ ok: true, votes: votes });
     }
 
@@ -221,7 +230,7 @@ function doPost(e) {
       const status = body.status || 'published';
       // Clear existing meals (and their dishes) for this household + week.
       const old = filterBy('Meals', 'household_id', hid)
-        .filter(function (m) { return String(m.week_start) === String(start); });
+        .filter(function (m) { return norm(m.week_start) === norm(start); });
       old.forEach(function (m) { deleteMatch('MealDishes', { meal_id: m.id }); });
       deleteMatch('Meals', { household_id: hid, week_start: start });
 
@@ -296,7 +305,7 @@ function deleteMatch(name, matchObj) {
   });
   const data = sh.getDataRange().getValues();
   for (let i = data.length - 1; i >= 1; i--) {
-    const hit = cols.every(function (c) { return String(data[i][c.idx]) === c.val; });
+    const hit = cols.every(function (c) { return norm(data[i][c.idx]) === norm(c.val); });
     if (hit) sh.deleteRow(i + 1);
   }
 }
@@ -306,6 +315,11 @@ function deleteMatch(name, matchObj) {
 function json(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+// Normalize a cell value for matching: Date -> 'yyyy-MM-dd', else string.
+function norm(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  return String(v == null ? '' : v);
 }
 function now() { return new Date().toISOString(); }
 function uid() { return Utilities.getUuid(); }
