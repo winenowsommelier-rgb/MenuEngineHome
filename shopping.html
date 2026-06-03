@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>MenuEngine · Shopping List</title>
+<style>
+  :root{
+    --bg:#FBFAF7; --surface:#FFFFFF; --ink:#181818; --muted:#8A8578;
+    --line:#EDE8E0; --accent:#E8623D; --accent-soft:#FBE9E2; --ok:#3AA76D;
+    --shadow:0 1px 2px rgba(40,30,20,.04), 0 8px 24px rgba(40,30,20,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+  .wrap{max-width:680px;margin:0 auto;padding:0 16px}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(251,250,247,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex;align-items:center;gap:12px;padding:14px 0}
+  .topbar h1{font-size:18px;font-weight:700;margin:0;flex:1;letter-spacing:-.3px}
+  .ghostbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;text-decoration:none}
+  .sub{color:var(--muted);font-size:13px;padding:12px 0 0}
+  .aisle{margin:18px 0 6px}
+  .aisle h2{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:0 0 8px 2px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 15px;border-top:1px solid var(--line);cursor:pointer}
+  .item:first-child{border-top:none}
+  .item .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+  .item.done .box{background:var(--ok);border-color:var(--ok)}
+  .item .nm{flex:1;font-weight:560}
+  .item.done .nm{text-decoration:line-through;color:var(--muted)}
+  .item .qty{font-weight:700;color:var(--accent);font-size:14px}
+  .item.done .qty{color:var(--muted)}
+  .note{background:var(--accent-soft);border-radius:14px;padding:12px 15px;margin:16px 0;font-size:13px;color:#7a3b16}
+  .state{text-align:center;color:var(--muted);padding:48px 20px}
+  @media print{ .topbar .ghostbtn,.actions{display:none} .card{box-shadow:none} body{padding:0} }
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap"><div class="row">
+  <h1>🛒 Shopping List</h1>
+  <a class="ghostbtn" href="admin.html">Admin</a>
+  <button class="ghostbtn" onclick="window.print()">🖨️ Print</button>
+</div></div></div>
+
+<div class="wrap">
+  <div class="sub" id="sub">Building list…</div>
+  <div id="board"><div class="state" id="state">Loading the week…</div></div>
+</div>
+
+<script src="config.js"></script>
+<script src="config.local.js" onerror="void 0"></script>
+<script src="api.js"></script>
+<script>
+const WEEK_START = "2026-06-08";
+const AISLE_ORDER = ["produce","meat & seafood","dairy & egg","bakery","frozen","pantry","other"];
+const WHOLE_UNITS = {pc:1,clove:1,egg:1,stalk:1,stick:1,can:1};
+
+let DISHES = [], MEMBERS = [], MEALS = [], VOTES = [];
+
+function slug(){ return (window.MENUENGINE_CONFIG && MENUENGINE_CONFIG.householdSlug) || ""; }
+function esc(s){ return String(s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function roundHalfUp(x){ return Math.ceil(x*2)/2; }
+
+function dtokens(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>2); }
+function lookupDish(name){
+  const nt = dtokens(name); let best=null, score=0;
+  DISHES.forEach(d=>{ const dt=dtokens(d.name); let sc=dt.filter(w=>nt.includes(w)).length;
+    if(d.name.toLowerCase()===String(name||"").toLowerCase()) sc+=10;
+    if(sc>score){score=sc;best=d;} });
+  return score>0?best:null;
+}
+
+/* portions (mirror admin: full house − away − dish-skippers) */
+function awayCodes(date,mt){ return new Set(VOTES.filter(v=>v.date===date&&v.meal_type===mt&&v.vote==="away").map(v=>v.member_code)); }
+function skippers(date,mt,dish){ return new Set(VOTES.filter(v=>v.date===date&&v.meal_type===mt&&v.vote==="dislike"&&v.dish_name===dish).map(v=>v.member_code)); }
+function dishServings(date,mt,dish){
+  const aw=awayCodes(date,mt), sk=skippers(date,mt,dish);
+  const sum=MEMBERS.filter(m=>!aw.has(m.code)&&!sk.has(m.code)).reduce((s,m)=>s+(Number(m.portion_factor)||1),0);
+  return roundHalfUp(sum);
+}
+
+async function load(){
+  if(!(window.MenuEngineAPI && MenuEngineAPI.hasApi() && slug())){
+    document.getElementById("state").textContent="No API configured."; return;
+  }
+  // dish library
+  try{ const r=await fetch("data/dishes.json"); DISHES=(await r.json()).dishes||[]; }catch(e){ DISHES=[]; }
+  try{
+    const [w,vt]=await Promise.all([MenuEngineAPI.getWeek(slug(),WEEK_START), MenuEngineAPI.getVotes(slug(),WEEK_START)]);
+    if(!w.ok){ document.getElementById("state").textContent="Couldn't load the week."; return; }
+    MEMBERS=w.members||[]; MEALS=w.meals||[]; VOTES=(vt&&vt.ok)?(vt.votes||[]):[];
+    build();
+  }catch(e){ document.getElementById("state").textContent="Error: "+e; }
+}
+
+function build(){
+  const agg = {};        // key aisle|item|unit -> {item,unit,aisle,qty}
+  const missing = {};    // dish_name -> true (no structured items)
+  let dishCount=0, itemized=0;
+
+  MEALS.forEach(meal=>{
+    (meal.dishes||[]).forEach(d=>{
+      dishCount++;
+      const servings = dishServings(meal.date, meal.meal_type, d.dish_name);
+      const lib = lookupDish(d.dish_name);
+      if(lib && Array.isArray(lib.items) && lib.items.length){
+        itemized++;
+        lib.items.forEach(it=>{
+          const key = (it.aisle||"other")+"|"+it.item.toLowerCase()+"|"+(it.unit||"");
+          if(!agg[key]) agg[key]={item:it.item, unit:it.unit||"", aisle:it.aisle||"other", qty:0};
+          agg[key].qty += (Number(it.qty)||0) * servings;
+        });
+      } else {
+        missing[d.dish_name]=true;
+      }
+    });
+  });
+
+  // group by aisle
+  const byAisle = {};
+  Object.keys(agg).forEach(k=>{ const a=agg[k]; (byAisle[a.aisle]=byAisle[a.aisle]||[]).push(a); });
+
+  const board=document.getElementById("board");
+  board.innerHTML="";
+  const totalItems = Object.keys(agg).length;
+  document.getElementById("sub").textContent =
+    `Week of Jun 8 · ${MEMBERS.length} people · ${totalItems} items · scaled to cook quantities`;
+
+  const aisles = AISLE_ORDER.filter(a=>byAisle[a]).concat(Object.keys(byAisle).filter(a=>AISLE_ORDER.indexOf(a)<0));
+  aisles.forEach(aisle=>{
+    const sec=document.createElement("div"); sec.className="aisle";
+    const items = byAisle[aisle].sort((a,b)=>a.item.localeCompare(b.item));
+    sec.innerHTML = `<h2>${esc(aisle)}</h2>`;
+    const card=document.createElement("div"); card.className="card";
+    items.forEach(a=>{
+      const q = WHOLE_UNITS[a.unit] ? Math.ceil(a.qty) : Math.round(a.qty*10)/10;
+      const id = "chk_"+aisle+"_"+a.item;
+      const row=document.createElement("div"); row.className="item";
+      row.innerHTML = `<div class="box">✓</div><div class="nm">${esc(a.item)}</div>
+        <div class="qty">${q} ${esc(a.unit)}</div>`;
+      const done = localStorage.getItem(id)==="1";
+      if(done) row.classList.add("done");
+      row.addEventListener("click", ()=>{
+        row.classList.toggle("done");
+        localStorage.setItem(id, row.classList.contains("done")?"1":"0");
+      });
+      card.appendChild(row);
+    });
+    sec.appendChild(card);
+    board.appendChild(sec);
+  });
+
+  const miss = Object.keys(missing);
+  if(miss.length){
+    const n=document.createElement("div"); n.className="note";
+    n.innerHTML = `📝 ${miss.length} dish${miss.length>1?"es":""} aren't itemized yet, so they're not in the totals: ${miss.map(esc).join(", ")}.`;
+    board.appendChild(n);
+  }
+  if(!totalItems){
+    board.innerHTML = `<div class="state">No itemized ingredients found for this week yet.</div>`;
+  }
+}
+
+load();
+</script>
+</body>
+</html>
