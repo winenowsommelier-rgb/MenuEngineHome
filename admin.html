@@ -52,8 +52,7 @@
   .dish .skip{font-size:11px;font-weight:700;color:#7a3b16;background:var(--flag2);border-radius:999px;padding:2px 8px}
   .dish .dqty{font-size:12px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 9px}
   /* edit mode */
-  .dish input.din{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:14px;font-family:inherit}
-  .dish select.dsel{border:1px solid var(--line);border-radius:8px;padding:7px;font-size:12px;background:#fff}
+  .dish select.dsel-name{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px 9px;font-size:14px;font-family:inherit;background:#fff;-webkit-appearance:menulist}
   .dish .rm{border:none;background:none;color:#c54;font-size:17px;cursor:pointer;padding:2px 6px}
   .addrow{padding:9px 14px;border-top:1px dashed var(--line)}
   .addbtn{border:1px dashed var(--line);background:transparent;color:var(--accent);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
@@ -175,12 +174,37 @@ function votesFor(date, meal_type){
 }
 function memberName(code){ const m = MEMBERS.find(function(x){return x.code===code;}); return m?m.name:code; }
 
+/* ---- dish library (for the add/swap dropdown) ---- */
+let DISHES = [];
+async function ensureDishes(){
+  if(DISHES.length) return;
+  try{ const r = await fetch("data/dishes.json"); DISHES = (await r.json()).dishes || []; }
+  catch(e){ DISHES = []; }
+}
+function libCuisine(name){ const d = DISHES.find(function(x){return x.name===name;}); return d?d.cuisine:""; }
+function dishOptionsHtml(sel){
+  let html = `<option value="">— choose a dish —</option>`;
+  const known = DISHES.some(function(d){return d.name===sel;});
+  if(sel && !known) html += `<option value="${esc(sel)}" selected>${esc(sel)} (custom)</option>`;
+  const byC = {};
+  DISHES.forEach(function(d){ (byC[d.cuisine]=byC[d.cuisine]||[]).push(d); });
+  Object.keys(byC).sort().forEach(function(c){
+    html += `<optgroup label="${esc(c)}">`;
+    byC[c].slice().sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(d){
+      html += `<option value="${esc(d.name)}"${d.name===sel?" selected":""}>${d.emoji||""} ${esc(d.name)}</option>`;
+    });
+    html += `</optgroup>`;
+  });
+  return html;
+}
+
 /* ---- load ---- */
 async function load(){
   const st = document.getElementById("state");
   if(!(window.MenuEngineAPI && MenuEngineAPI.hasApi() && slug())){
     st.textContent = "No API configured."; return;
   }
+  await ensureDishes();
   try{
     const [w, vt] = await Promise.all([
       MenuEngineAPI.getWeek(slug(), WEEK_START),
@@ -258,10 +282,8 @@ function mealCard(date, mt, meal){
 
   let dishHtml = (meal.dishes||[]).map(function(d, i){
     if(editing){
-      const opts = CUISINES.map(c=>`<option ${c===d.cuisine?"selected":""}>${c}</option>`).join("");
       return `<div class="dish" data-i="${i}">
-        <input class="din" value="${esc(d.dish_name)}" />
-        <select class="dsel">${opts}</select>
+        <select class="dsel-name">${dishOptionsHtml(d.dish_name)}</select>
         <button class="rm" title="Remove">✕</button></div>`;
     }
     const skips = dishDislikers(date, mt, d.dish_name);
@@ -305,15 +327,18 @@ function mealCard(date, mt, meal){
         meal.dishes.splice(i,1); render();
       });
     });
-    el.querySelectorAll(".dish").forEach(function(row){
-      const i = +row.dataset.i;
-      const inp = row.querySelector(".din"), sel = row.querySelector(".dsel");
-      if(inp) inp.addEventListener("input", function(){ meal.dishes[i].dish_name = inp.value; });
-      if(sel) sel.addEventListener("change", function(){ meal.dishes[i].cuisine = sel.value; });
+    el.querySelectorAll(".dsel-name").forEach(function(sel){
+      const i = +sel.closest(".dish").dataset.i;
+      sel.addEventListener("change", function(){
+        meal.dishes[i].dish_name = sel.value;
+        const c = libCuisine(sel.value); if(c) meal.dishes[i].cuisine = c;
+        const lib = DISHES.find(function(x){ return x.name===sel.value; });
+        if(lib && !meal.dishes[i].role) meal.dishes[i].role = (lib.tags && lib.tags[0]) || "";
+      });
     });
     const add = el.querySelector(".addbtn");
     if(add) add.addEventListener("click", function(){
-      meal.dishes.push({dish_name:"New dish", cuisine:"Home", role:"", notes:""}); render();
+      meal.dishes.push({dish_name:"", cuisine:"", role:"", notes:""}); render();
     });
   }
   return el;
